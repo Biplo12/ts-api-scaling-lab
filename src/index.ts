@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify from 'fastify';
 
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -6,8 +6,8 @@ const fastify = Fastify({
   logger: true,
 });
 
-fastify.get("/", (request, reply) => {
-  return { hello: "world" };
+fastify.get('/', (request, reply) => {
+  return { hello: 'world' };
 });
 
 const start = async () => {

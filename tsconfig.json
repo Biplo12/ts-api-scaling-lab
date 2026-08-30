@@ -1,41 +1,32 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    "module": "preserve",
-    "moduleResolution": "bundler",
+
+    // Environment Settings — build przez tsc, cel to Node ESM
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "target": "esnext",
     "types": ["node"],
     "lib": ["esnext"],
 
-    // Other Outputs
+    // Other Outputs — aplikacja, nie biblioteka
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
+    // "exactOptionalPropertyTypes": true,  // włącz, gdy kod już stoi
 
     // Recommended Options
-    //"jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
-  }
+  },
+  "include": ["src/**/*"]
 }
