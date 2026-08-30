@@ -1,27 +1,21 @@
 {
   "compilerOptions": {
-    // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
 
-    // Environment Settings — build przez tsc, cel to Node ESM
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "esnext",
     "types": ["node"],
     "lib": ["esnext"],
 
-    // Other Outputs — aplikacja, nie biblioteka
     "sourceMap": true,
     "declaration": false,
     "declarationMap": false,
 
-    // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
-    // "exactOptionalPropertyTypes": true,  // włącz, gdy kod już stoi
 
-    // Recommended Options
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
