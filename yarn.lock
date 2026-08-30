@@ -547,7 +547,15 @@
   dependencies:
     undici-types "~7.18.0"
 
-"@types/pg@^8.23.1":
+"@types/pg-copy-streams@^1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@types/pg-copy-streams/-/pg-copy-streams-1.2.5.tgz#ea150a409cec117a54b22f3d6615cd81bce886c7"
+  integrity sha512-7D6/GYW2uHIaVU6S/5omI+6RZnwlZBpLQDZAH83xX1rjxAOK0f6/deKyyUTewxqts145VIGn6XWYz1YGf50G5g==
+  dependencies:
+    "@types/node" "*"
+    "@types/pg" "*"
+
+"@types/pg@*", "@types/pg@^8.23.1":
   version "8.23.1"
   resolved "https://registry.yarnpkg.com/@types/pg/-/pg-8.23.1.tgz#7e712ce02cf44ad100862127f10f52e9c6b9d227"
   integrity sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==
@@ -1261,6 +1269,11 @@ pg-connection-string@^2.14.0:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.14.0.tgz#abc26ee4f37c56c0f3ae0fcf0b0653cc4e1c0fd9"
   integrity sha512-XwWDGcLRGCXAR8F/AM5bG7Q+A3Wm2s6QeEjlOKZLlH3UYcguiqCWKyWXVag5TLTIjR7oOJUY8kcADaZgWPyLeg==
+
+pg-copy-streams@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/pg-copy-streams/-/pg-copy-streams-7.0.0.tgz#4659bccad49eab0d7f4b25e6e33e36a80107bf82"
+  integrity sha512-zBvnY6wtaBRE2ae2xXWOOGMaNVPkXh1vhypAkNSKgMdciJeTyIQAHZaEeRAxUjs/p1El5jgzYmwG5u871Zj3dQ==
 
 pg-int8@1.0.1:
   version "1.0.1"

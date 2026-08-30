@@ -9,9 +9,11 @@
   "devDependencies": {
     "@types/node": "24.13.3",
     "@types/pg": "^8.23.1",
+    "@types/pg-copy-streams": "^1.2.5",
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.9.1",
     "globals": "^17.11.0",
+    "pg-copy-streams": "^7.0.0",
     "prettier": "^3.9.6",
     "tsc": "^2.0.4",
     "tsx": "^4.23.13",
@@ -29,7 +31,8 @@
     "format:check": "prettier --check .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx --env-file=.env src/scripts/seed.ts"
   },
   "type": "module",
   "dependencies": {

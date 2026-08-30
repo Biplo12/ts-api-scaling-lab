@@ -1,0 +1,30 @@
+                                                                   QUERY PLAN                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=44533.89..44536.21 rows=20 width=42) (actual time=84.712..87.661 rows=20.00 loops=1)
+   Buffers: shared hit=13098 read=19919
+   ->  Gather Merge  (cost=44533.89..44546.70 rows=110 width=42) (actual time=84.711..87.657 rows=20.00 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=13098 read=19919
+         ->  Sort  (cost=43533.86..43533.98 rows=46 width=42) (actual time=82.159..82.162 rows=15.33 loops=3)
+               Sort Key: t.created_at DESC
+               Sort Method: quicksort  Memory: 26kB
+               Buffers: shared hit=13098 read=19919
+               Worker 0:  Sort Method: quicksort  Memory: 27kB
+               Worker 1:  Sort Method: quicksort  Memory: 27kB
+               ->  Nested Loop Left Join  (cost=0.29..43532.64 rows=46 width=42) (actual time=3.430..82.065 rows=31.00 loops=3)
+                     Buffers: shared hit=13082 read=19919
+                     ->  Parallel Seq Scan on tasks t  (cost=0.00..43217.40 rows=46 width=40) (actual time=3.365..81.551 rows=31.00 loops=3)
+                           Filter: (project_id = 4200)
+                           Rows Removed by Filter: 666636
+                           Buffers: shared hit=12882 read=19919
+                     ->  Index Scan using users_pkey on users u  (cost=0.29..6.85 rows=1 width=18) (actual time=0.011..0.011 rows=0.71 loops=93)
+                           Index Cond: (id = t.assignee_id)
+                           Index Searches: 66
+                           Buffers: shared hit=200
+ Planning:
+   Buffers: shared hit=252
+ Planning Time: 0.980 ms
+ Execution Time: 87.739 ms
+(26 rows)
+
