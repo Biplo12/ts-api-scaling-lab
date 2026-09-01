@@ -1,4 +1,13 @@
-import { pgTable, pgEnum, bigint, varchar, text, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  pgEnum,
+  bigint,
+  varchar,
+  text,
+  timestamp,
+  primaryKey,
+  index,
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const planEnum = pgEnum('plan', ['free', 'pro', 'enterprise']);
@@ -79,20 +88,24 @@ export const tasks = pgTable('tasks', {
     .$onUpdate(() => new Date()),
 });
 
-export const comments = pgTable('comments', {
-  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
-  orgId: bigint('org_id', { mode: 'number' })
-    .notNull()
-    .references(() => organizations.id),
-  taskId: bigint('task_id', { mode: 'number' })
-    .notNull()
-    .references(() => tasks.id),
-  authorId: bigint('author_id', { mode: 'number' })
-    .notNull()
-    .references(() => users.id),
-  body: text('body').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const comments = pgTable(
+  'comments',
+  {
+    id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+    orgId: bigint('org_id', { mode: 'number' })
+      .notNull()
+      .references(() => organizations.id),
+    taskId: bigint('task_id', { mode: 'number' })
+      .notNull()
+      .references(() => tasks.id),
+    authorId: bigint('author_id', { mode: 'number' })
+      .notNull()
+      .references(() => users.id),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('comments_task_id_idx').on(t.taskId)],
+);
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   users: many(users),

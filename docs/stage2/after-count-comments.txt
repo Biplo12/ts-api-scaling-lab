@@ -1,0 +1,15 @@
+                                                                  QUERY PLAN                                                                  
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=8.87..8.88 rows=1 width=8) (actual time=0.041..0.041 rows=1.00 loops=1)
+   Buffers: shared hit=4 read=3
+   ->  Index Only Scan using comments_task_id_idx on comments  (cost=0.43..8.82 rows=22 width=0) (actual time=0.038..0.039 rows=3.00 loops=1)
+         Index Cond: (task_id = 967141)
+         Heap Fetches: 0
+         Index Searches: 1
+         Buffers: shared hit=4 read=3
+ Planning:
+   Buffers: shared hit=75 read=5
+ Planning Time: 0.308 ms
+ Execution Time: 0.077 ms
+(11 rows)
+

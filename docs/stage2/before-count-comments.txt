@@ -1,0 +1,20 @@
+                                                               QUERY PLAN                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=98519.91..98519.92 rows=1 width=8) (actual time=634.664..637.214 rows=1.00 loops=1)
+   Buffers: shared hit=15869 read=55609
+   ->  Gather  (cost=98519.69..98519.90 rows=2 width=8) (actual time=634.535..637.205 rows=3.00 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=15869 read=55609
+         ->  Partial Aggregate  (cost=97519.69..97519.70 rows=1 width=8) (actual time=630.816..630.817 rows=1.00 loops=3)
+               Buffers: shared hit=15869 read=55609
+               ->  Parallel Seq Scan on comments  (cost=0.00..97519.67 rows=10 width=0) (actual time=304.012..630.810 rows=1.00 loops=3)
+                     Filter: (task_id = 967141)
+                     Rows Removed by Filter: 1666671
+                     Buffers: shared hit=15869 read=55609
+ Planning:
+   Buffers: shared hit=46 read=17
+ Planning Time: 5.936 ms
+ Execution Time: 638.052 ms
+(16 rows)
+
