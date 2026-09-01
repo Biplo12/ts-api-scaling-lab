@@ -36,6 +36,20 @@ export default tseslint.config(
   },
 
   {
+    files: ["src/routes/**/*.ts"],
+    rules: {
+      "@typescript-eslint/require-await": "off",
+    },
+  },
+
+  {
+    files: ["src/scripts/**/*.ts"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+
+  {
     files: ["bench/**/*.{js,ts}"],
     extends: [eslint.configs.recommended, tseslint.configs.disableTypeChecked],
     languageOptions: {

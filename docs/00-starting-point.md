@@ -1,6 +1,6 @@
 # Starting point
 
-State before any optimization.
+State before any optimization. Facts only, no measurements.
 
 ## Machine
 
@@ -11,10 +11,8 @@ State before any optimization.
 | Disk | NVMe                                 |
 | OS   | Windows 11                           |
 
-Node runs on Windows. Postgres runs in Docker.
-
-The load generator runs on the same machine as the server. They share CPU, so
-there is a ceiling that is not the server's ceiling. I measure it separately.
+Node runs on Windows. Postgres runs in Docker. The load generator runs on the
+same machine, so it competes for CPU with the server.
 
 ## Stack
 
@@ -41,9 +39,8 @@ IDs are bigint identity, not UUID. Sequential numbers keep the index small.
 
 Size on disk: 1003 MB. Comments 666 MB, tasks 299 MB.
 
-Seeding takes 332 seconds. Data goes in with COPY.
-
-The random generator uses seed 42. Two runs give the same database.
+Seeding takes 332 seconds with COPY. Random generator uses seed 42, so two runs
+produce the same database.
 
 ## Data is skewed
 
@@ -57,6 +54,19 @@ A few organizations are large. Most are small.
 
 No organization is empty.
 
+## Endpoints
+
+| Method | Path                | Queries |
+| ------ | ------------------- | ------- |
+| GET    | /health             | 0       |
+| GET    | /tasks/:id          | 15      |
+| GET    | /projects/:id/tasks | 42      |
+| POST   | /tasks/:id/comments | 4       |
+
+/health returns a constant. It measures the ceiling of the setup.
+
+Both read endpoints have N+1 on purpose.
+
 ## Postgres settings
 
 Defaults.
@@ -66,36 +76,7 @@ Defaults.
 | shared_buffers | 128 MB |
 | work_mem       | 4 MB   |
 
-Database is 1003 MB. Most of it does not fit in 128 MB.
-
-## First query
-
-20 tasks from one project, with the assigned user.
-
-```sql
-SELECT t.id, t.title, t.status, u.name
-FROM tasks t
-LEFT JOIN users u ON u.id = t.assignee_id
-WHERE t.project_id = 4200
-ORDER BY t.created_at DESC
-LIMIT 20
-```
-
-Time: 62 ms.
-
-- Sequential scan on tasks. No index on project_id.
-- 2 million rows scanned to find 93.
-- 158 MB read from disk.
-- Postgres used two parallel workers.
-
-One core does about 16 of these per second.
-
-Second run of the same query: 87 ms. That is 40 percent apart. Single runs mean
-nothing here. Every number has to be a median of several.
-
-Full plan: [baseline/tasks-by-project.txt](baseline/tasks-by-project.txt)
-
-## Not done yet, on purpose
+## Missing on purpose
 
 - No indexes except primary keys and unique constraints.
 - Foreign keys have no indexes. Postgres does not add them.
@@ -104,8 +85,8 @@ Full plan: [baseline/tasks-by-project.txt](baseline/tasks-by-project.txt)
 - No metrics.
 - Queries written the plain way, N+1 included.
 
-## Next
+## Stage notes
 
-1. Endpoints in Fastify.
-2. k6 script with the same skewed traffic.
-3. Measure.
+| Stage | Notes                            |
+| ----- | -------------------------------- |
+| 1     | [01-baseline.md](01-baseline.md) |
