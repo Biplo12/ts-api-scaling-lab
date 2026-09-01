@@ -4,12 +4,8 @@ import projectRoutes from './routes/projects.js';
 import taskRoutes from './routes/tasks.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
-  const level = process.env.LOG_LEVEL ?? 'info';
-  const quiet = level === 'error' || level === 'silent';
-
   const app = Fastify({
-    logger: { level },
-    disableRequestLogging: quiet,
+    logger: { level: process.env.LOG_LEVEL ?? 'info' },
   });
 
   await app.register(healthRoutes);
