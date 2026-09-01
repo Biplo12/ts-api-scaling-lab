@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" width="800" height="380" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .box { fill: none; stroke: #d0d7de; stroke-width: 1.5; rx: 6; }
+    .big { stroke: #f85149; }
+    .name { fill: #1f2328; font-size: 14px; font-weight: 600; }
+    .rows { fill: #656d76; font-size: 11px; }
+    .link { stroke: #8c959f; stroke-width: 1.5; fill: none; }
+    .arrow { fill: #8c959f; }
+    .note { fill: #656d76; font-size: 12px; }
+    @media (prefers-color-scheme: dark) {
+      .box { stroke: #3d444d; }
+      .big { stroke: #f85149; }
+      .name { fill: #f0f6fc; }
+      .rows { fill: #9198a1; }
+      .link { stroke: #656c76; }
+      .arrow { fill: #656c76; }
+      .note { fill: #9198a1; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="arrow"/>
+    </marker>
+  </defs>
+
+  <line x1="352" y1="64" x2="205" y2="106" class="link" marker-end="url(#arrowhead)"/>
+  <line x1="448" y1="64" x2="595" y2="106" class="link" marker-end="url(#arrowhead)"/>
+  <line x1="655" y1="158" x2="655" y2="200" class="link" marker-end="url(#arrowhead)"/>
+  <line x1="597" y1="158" x2="455" y2="200" class="link" marker-end="url(#arrowhead)"/>
+  <line x1="203" y1="158" x2="345" y2="200" class="link" marker-end="url(#arrowhead)"/>
+  <line x1="655" y1="252" x2="655" y2="294" class="link" marker-end="url(#arrowhead)"/>
+
+  <rect x="315" y="16" width="170" height="46" class="box" rx="6"/>
+  <text x="400" y="36" text-anchor="middle" class="name">organizations</text>
+  <text x="400" y="52" text-anchor="middle" class="rows">1 000 rows</text>
+
+  <rect x="60" y="112" width="170" height="46" class="box" rx="6"/>
+  <text x="145" y="132" text-anchor="middle" class="name">users</text>
+  <text x="145" y="148" text-anchor="middle" class="rows">50 000 rows</text>
+
+  <rect x="570" y="112" width="170" height="46" class="box" rx="6"/>
+  <text x="655" y="132" text-anchor="middle" class="name">projects</text>
+  <text x="655" y="148" text-anchor="middle" class="rows">20 000 rows</text>
+
+  <rect x="315" y="206" width="170" height="46" class="box" rx="6"/>
+  <text x="400" y="226" text-anchor="middle" class="name">project_members</text>
+  <text x="400" y="242" text-anchor="middle" class="rows">200 000 rows</text>
+
+  <rect x="570" y="206" width="170" height="46" class="box big" rx="6"/>
+  <text x="655" y="226" text-anchor="middle" class="name">tasks</text>
+  <text x="655" y="242" text-anchor="middle" class="rows">2 000 000 rows, 299 MB</text>
+
+  <rect x="570" y="300" width="170" height="46" class="box big" rx="6"/>
+  <text x="655" y="320" text-anchor="middle" class="name">comments</text>
+  <text x="655" y="336" text-anchor="middle" class="rows">5 000 000 rows, 666 MB</text>
+
+  <text x="60" y="212" class="note">project_members is a many-to-many</text>
+  <text x="60" y="230" class="note">table between users and projects.</text>
+  <text x="60" y="268" class="note">users also appear on tasks as the</text>
+  <text x="60" y="286" class="note">assignee and on comments as the</text>
+  <text x="60" y="304" class="note">author. Those lines are left out to</text>
+  <text x="60" y="322" class="note">keep the picture readable.</text>
+</svg>
