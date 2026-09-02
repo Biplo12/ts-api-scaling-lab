@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 240" width="760" height="240" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .title { fill: #1f2328; font-size: 14px; font-weight: 600; }
+    .label { fill: #1f2328; font-size: 12px; }
+    .value { fill: #656d76; font-size: 11px; font-weight: 600; }
+    .axis { stroke: #d0d7de; stroke-width: 1; }
+    .tick { fill: #656d76; font-size: 10px; }
+    .note { fill: #656d76; font-size: 11px; }
+    .bad { fill: #f85149; }
+    .mid { fill: #d29922; }
+    .good { fill: #3fb950; }
+    @media (prefers-color-scheme: dark) {
+      .title { fill: #f0f6fc; }
+      .label { fill: #f0f6fc; }
+      .value { fill: #9198a1; }
+      .axis { stroke: #3d444d; }
+      .tick { fill: #9198a1; }
+      .note { fill: #9198a1; }
+    }
+  </style>
+
+  <text x="20" y="22" class="title">Four indexes for one query, on a project with 73 692 tasks</text>
+
+  <line x1="200" y1="36" x2="200" y2="172" class="axis"/>
+  <line x1="330" y1="36" x2="330" y2="172" class="axis"/>
+  <line x1="460" y1="36" x2="460" y2="172" class="axis"/>
+  <line x1="590" y1="36" x2="590" y2="172" class="axis"/>
+  <line x1="720" y1="36" x2="720" y2="172" class="axis"/>
+
+  <text x="200" y="188" text-anchor="middle" class="tick">0.1 ms</text>
+  <text x="330" y="188" text-anchor="middle" class="tick">1 ms</text>
+  <text x="460" y="188" text-anchor="middle" class="tick">10 ms</text>
+  <text x="590" y="188" text-anchor="middle" class="tick">100 ms</text>
+  <text x="720" y="188" text-anchor="middle" class="tick">1 s</text>
+
+  <text x="190" y="60" text-anchor="end" class="label">no index</text>
+  <rect x="200" y="46" width="409" height="20" class="mid" rx="2"/>
+  <text x="615" y="60" class="value">140 ms</text>
+
+  <text x="190" y="92" text-anchor="end" class="label">(project_id)</text>
+  <rect x="200" y="78" width="457" height="20" class="bad" rx="2"/>
+  <text x="663" y="92" class="value">326 ms, worse</text>
+
+  <text x="190" y="124" text-anchor="end" class="label">+ created_at DESC</text>
+  <rect x="200" y="110" width="354" height="20" class="mid" rx="2"/>
+  <text x="560" y="124" class="value">53 ms</text>
+
+  <text x="190" y="156" text-anchor="end" class="label">+ NULLS FIRST</text>
+  <rect x="200" y="142" width="32" height="20" class="good" rx="2"/>
+  <text x="238" y="156" class="value">0.178 ms</text>
+
+  <text x="20" y="212" class="note">Logarithmic scale. The plain index made things worse than no index at all. The composite one</text>
+  <text x="20" y="228" class="note">only worked once its NULLS order matched what ORDER BY DESC actually means in Postgres.</text>
+</svg>

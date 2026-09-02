@@ -1,0 +1,30 @@
+                                                                            QUERY PLAN                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=36719.09..36721.42 rows=20 width=28) (actual time=49.690..53.061 rows=20.00 loops=1)
+   Buffers: shared hit=156 read=29647 written=8
+   ->  Gather Merge  (cost=36719.09..45329.11 rows=73927 width=28) (actual time=49.688..53.057 rows=20.00 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=156 read=29647 written=8
+         ->  Sort  (cost=35719.07..35796.08 rows=30803 width=28) (actual time=47.126..47.128 rows=16.33 loops=3)
+               Sort Key: created_at DESC
+               Sort Method: top-N heapsort  Memory: 27kB
+               Buffers: shared hit=156 read=29647 written=8
+               Worker 0:  Sort Method: top-N heapsort  Memory: 27kB
+               Worker 1:  Sort Method: top-N heapsort  Memory: 27kB
+               ->  Parallel Bitmap Heap Scan on tasks t  (cost=1713.37..34899.41 rows=30803 width=28) (actual time=11.758..43.609 rows=24564.00 loops=3)
+                     Recheck Cond: (project_id = 1)
+                     Heap Blocks: exact=10018
+                     Buffers: shared hit=140 read=29647 written=8
+                     Worker 0:  Heap Blocks: exact=9968
+                     Worker 1:  Heap Blocks: exact=9473
+                     ->  Bitmap Index Scan on tasks_project_created_idx  (cost=0.00..1694.89 rows=73928 width=0) (actual time=9.766..9.767 rows=73692.00 loops=1)
+                           Index Cond: (project_id = 1)
+                           Index Searches: 1
+                           Buffers: shared hit=4 read=284
+ Planning:
+   Buffers: shared hit=114
+ Planning Time: 0.273 ms
+ Execution Time: 53.109 ms
+(26 rows)
+

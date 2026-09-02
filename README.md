@@ -8,7 +8,7 @@ step gave.
 
 The interesting part is not the final number. It is which change gave what.
 
-![One index on comments.task_id](docs/img/stage2-latency.svg)
+![Choosing the right index](docs/img/stage3-index-choice.svg)
 
 ## Where it stands
 
@@ -16,6 +16,7 @@ The interesting part is not the final number. It is which change gave what.
 | ----- | ----------------------------- | -------- | ---------------- |
 | 1     | nothing, baseline             | 1 RPS    | 4980 ms          |
 | 2     | one index on comments.task_id | 30 RPS   | 235 ms           |
+| 3     | composite index on tasks      | 120 RPS  | 197 ms           |
 
 The same setup does **15 000 RPS** on an endpoint that returns a constant. So the
 server is not the problem. The gap between 15 000 and 1 is the whole project.
@@ -171,19 +172,20 @@ If lag is flat and nothing is waiting, the database itself is slow.
 | [00-starting-point.md](docs/00-starting-point.md) | Design decisions and what I left out     |
 | [01-baseline.md](docs/01-baseline.md)             | First measurements and what they mean    |
 | [02-indexes.md](docs/02-indexes.md)               | One index, 30x capacity                  |
+| [03-index-choice.md](docs/03-index-choice.md)     | Four indexes for one query, 300x apart   |
 
 Each stage gets its own file: goal, results table, what I learned, next step.
 
 ## What comes next
 
-1. Fixing the N+1 queries. The task list still runs 42 of them.
+1. Fixing the N+1. The task list is 34 ms and its main query is 0.178 ms of that.
 2. The remaining foreign key indexes.
 3. Running Node on all cores instead of one.
 
 ## What this is not
 
 - Not production code. No auth, no rate limits, no tests yet.
-- The N+1 queries are deliberate. They are what stage 3 fixes.
+- The N+1 queries are deliberate. They are what stage 4 fixes.
 - Numbers come from one desktop machine with the load generator on it. They show
   differences between steps, not what this hardware could do in a clean setup.
 - I have not run any of this in production. It is a learning project and the

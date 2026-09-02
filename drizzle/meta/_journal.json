@@ -15,6 +15,27 @@
       "when": 1788298399168,
       "tag": "0001_optimal_hercules",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788374236694,
+      "tag": "0002_real_puppet_master",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788374300075,
+      "tag": "0003_dazzling_tattoo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788374389738,
+      "tag": "0004_mighty_vampiro",
+      "breakpoints": true
     }
   ]
 }

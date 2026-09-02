@@ -67,26 +67,32 @@ export const projectMembers = pgTable(
   (t) => [primaryKey({ columns: [t.projectId, t.userId] })],
 );
 
-export const tasks = pgTable('tasks', {
-  id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
-  orgId: bigint('org_id', { mode: 'number' })
-    .notNull()
-    .references(() => organizations.id),
-  projectId: bigint('project_id', { mode: 'number' })
-    .notNull()
-    .references(() => projects.id),
-  assigneeId: bigint('assignee_id', { mode: 'number' }).references(() => users.id),
-  title: varchar('title', { length: 500 }).notNull(),
-  description: text('description'),
-  status: taskStatusEnum('status').notNull().default('todo'),
-  priority: taskPriorityEnum('priority').notNull().default('medium'),
-  dueDate: timestamp('due_date', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const tasks = pgTable(
+  'tasks',
+  {
+    id: bigint('id', { mode: 'number' }).generatedAlwaysAsIdentity().primaryKey(),
+    orgId: bigint('org_id', { mode: 'number' })
+      .notNull()
+      .references(() => organizations.id),
+    projectId: bigint('project_id', { mode: 'number' })
+      .notNull()
+      .references(() => projects.id),
+    assigneeId: bigint('assignee_id', { mode: 'number' }).references(() => users.id),
+    title: varchar('title', { length: 500 }).notNull(),
+    description: text('description'),
+    status: taskStatusEnum('status').notNull().default('todo'),
+    priority: taskPriorityEnum('priority').notNull().default('medium'),
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index('tasks_project_created_idx').on(t.projectId, t.createdAt.desc().nullsFirst()),
+  ],
+);
 
 export const comments = pgTable(
   'comments',
