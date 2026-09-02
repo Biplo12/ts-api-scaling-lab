@@ -7,9 +7,10 @@
     .tick { fill: #656d76; font-size: 10px; }
     .note { fill: #656d76; font-size: 11px; }
     .b1 { fill: #f85149; }
-    .b2 { fill: #d29922; }
-    .b3 { fill: #58a6ff; }
-    .b4 { fill: #3fb950; }
+    .b2 { fill: #db6d28; }
+    .b3 { fill: #d29922; }
+    .b4 { fill: #58a6ff; }
+    .b5 { fill: #3fb950; }
     @media (prefers-color-scheme: dark) {
       .title { fill: #f0f6fc; }
       .label { fill: #f0f6fc; }
@@ -22,32 +23,36 @@
 
   <text x="20" y="24" class="title">Requests per second, same machine, same data</text>
 
-  <line x1="172" y1="40" x2="172" y2="180" class="axis"/>
-  <line x1="344" y1="40" x2="344" y2="180" class="axis"/>
-  <line x1="516" y1="40" x2="516" y2="180" class="axis"/>
-  <line x1="688" y1="40" x2="688" y2="180" class="axis"/>
+  <line x1="168" y1="38" x2="168" y2="188" class="axis"/>
+  <line x1="326" y1="38" x2="326" y2="188" class="axis"/>
+  <line x1="484" y1="38" x2="484" y2="188" class="axis"/>
+  <line x1="642" y1="38" x2="642" y2="188" class="axis"/>
 
-  <text x="172" y="196" text-anchor="middle" class="tick">1</text>
-  <text x="344" y="196" text-anchor="middle" class="tick">10</text>
-  <text x="516" y="196" text-anchor="middle" class="tick">100</text>
-  <text x="688" y="196" text-anchor="middle" class="tick">1000</text>
+  <text x="168" y="204" text-anchor="middle" class="tick">1</text>
+  <text x="326" y="204" text-anchor="middle" class="tick">10</text>
+  <text x="484" y="204" text-anchor="middle" class="tick">100</text>
+  <text x="642" y="204" text-anchor="middle" class="tick">1000</text>
 
-  <text x="110" y="63" text-anchor="end" class="label">baseline</text>
-  <rect x="120" y="50" width="52" height="22" class="b1" rx="2"/>
-  <text x="180" y="66" class="value">1</text>
+  <text x="110" y="62" text-anchor="end" class="label">baseline</text>
+  <rect x="120" y="48" width="48" height="20" class="b1" rx="2"/>
+  <text x="176" y="63" class="value">1</text>
 
-  <text x="110" y="98" text-anchor="end" class="label">+ one index</text>
-  <rect x="120" y="85" width="306" height="22" class="b2" rx="2"/>
-  <text x="434" y="101" class="value">30</text>
+  <text x="110" y="92" text-anchor="end" class="label">+ one index</text>
+  <rect x="120" y="78" width="281" height="20" class="b2" rx="2"/>
+  <text x="409" y="93" class="value">30</text>
 
-  <text x="110" y="133" text-anchor="end" class="label">+ right index</text>
-  <rect x="120" y="120" width="410" height="22" class="b3" rx="2"/>
-  <text x="538" y="136" class="value">120</text>
+  <text x="110" y="122" text-anchor="end" class="label">+ right index</text>
+  <rect x="120" y="108" width="376" height="20" class="b3" rx="2"/>
+  <text x="504" y="123" class="value">120</text>
 
-  <text x="110" y="168" text-anchor="end" class="label">+ no N+1</text>
-  <rect x="120" y="155" width="500" height="22" class="b4" rx="2"/>
-  <text x="628" y="171" class="value">400</text>
+  <text x="110" y="152" text-anchor="end" class="label">+ no N+1</text>
+  <rect x="120" y="138" width="459" height="20" class="b4" rx="2"/>
+  <text x="587" y="153" class="value">400</text>
 
-  <text x="20" y="222" class="note">Logarithmic scale. Nothing was added to the hardware. p95 on the task list went from</text>
-  <text x="20" y="238" class="note">4980 ms to 8 ms across the same four steps.</text>
+  <text x="110" y="182" text-anchor="end" class="label">+ 4 processes</text>
+  <rect x="120" y="168" width="534" height="20" class="b5" rx="2"/>
+  <text x="662" y="183" class="value">1200</text>
+
+  <text x="20" y="228" class="note">Logarithmic scale. Nothing was added to the hardware. p95 on the task list went from 4980 ms</text>
+  <text x="20" y="244" class="note">to 69 ms across these five steps.</text>
 </svg>

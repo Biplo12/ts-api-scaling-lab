@@ -17,8 +17,9 @@ part is not the final number but which change gave what.
 | 2     | one index on comments.task_id      | 30 RPS   | 235 ms           |
 | 3     | the right composite index on tasks | 120 RPS  | 197 ms           |
 | 4     | joins instead of N+1               | 400 RPS  | 8 ms             |
+| 5     | Node on 4 processes instead of 1   | 1200 RPS | 69 ms            |
 
-Four changes, 400x capacity, same hardware. The setup itself tops out around
+Five changes, 1200x capacity, same hardware. The setup itself tops out around
 15 000 RPS on an endpoint that returns a constant, so there is still room.
 
 ## Contents
@@ -42,6 +43,7 @@ Each file has the same shape: what I did, the numbers, what I learned.
 | [02-indexes.md](docs/02-indexes.md)               | One index, 30x capacity                |
 | [03-index-choice.md](docs/03-index-choice.md)     | Four indexes for one query, 300x apart |
 | [04-n-plus-one.md](docs/04-n-plus-one.md)         | 42 queries down to 3                   |
+| [05-cluster.md](docs/05-cluster.md)               | Four processes beat six, and why       |
 
 ## Why the first version was slow
 
@@ -152,6 +154,9 @@ runs:
 ```bash
 k6 run -e RATE=100 -e DURATION=30s bench/load.js
 ```
+
+`WORKERS` in `.env` sets how many Node processes to run. On this machine 4 is
+the best value and 6 is worse than 4, which stage 5 explains.
 
 Use `127.0.0.1`, never `localhost`. On Windows the name costs 206 ms per
 request, which is explained in the stage 1 notes.
