@@ -4,9 +4,8 @@ A performance lab, not a product.
 
 I took a normal REST API on Postgres, wrote it the plain way, and now I make it
 faster one step at a time. After every step I measure and write down what that
-step gave.
-
-The interesting part is not the final number. It is which change gave what.
+step gave. It is a learning project, not production code, and the interesting
+part is not the final number but which change gave what.
 
 ![Capacity by stage](docs/img/capacity.svg)
 
@@ -21,6 +20,28 @@ The interesting part is not the final number. It is which change gave what.
 
 Four changes, 400x capacity, same hardware. The setup itself tops out around
 15 000 RPS on an endpoint that returns a constant, so there is still room.
+
+## Contents
+
+- [Stage notes](#stage-notes) — one file per step, with the numbers
+- [Why the first version was slow](#why-the-first-version-was-slow)
+- [The database](#the-database)
+- [Endpoints](#endpoints)
+- [Machine and stack](#machine-and-stack)
+- [Run it](#run-it)
+- [Measure it](#measure-it)
+
+## Stage notes
+
+Each file has the same shape: what I did, the numbers, what I learned.
+
+| File                                              | What is in it                          |
+| ------------------------------------------------- | -------------------------------------- |
+| [00-starting-point.md](docs/00-starting-point.md) | Design decisions and what I left out   |
+| [01-baseline.md](docs/01-baseline.md)             | The untouched system, 1 RPS            |
+| [02-indexes.md](docs/02-indexes.md)               | One index, 30x capacity                |
+| [03-index-choice.md](docs/03-index-choice.md)     | Four indexes for one query, 300x apart |
+| [04-n-plus-one.md](docs/04-n-plus-one.md)         | 42 queries down to 3                   |
 
 ## Why the first version was slow
 
@@ -66,19 +87,18 @@ later.
 Load test traffic is split 60 / 30 / 10 between the task list, task details, and
 writes.
 
-## Machine
+## Machine and stack
 
 Intel Core, 6 cores and 12 threads, 2.6 GHz with boost to 4.4 GHz. 32 GB RAM,
 NVMe disk, Windows 11.
 
-Node runs on Windows, Postgres in Docker, k6 on the same machine. The load
-generator competes for CPU with the server, and that cost is measured in the
-stage 1 notes.
-
-## Stack
-
 Node 24, TypeScript 6, Fastify 5, Postgres 18, Drizzle 0.45, pg 8, prom-client,
 k6.
+
+Node runs on Windows, Postgres in Docker, k6 on the same machine. The load
+generator competes for CPU with the server, so these numbers show differences
+between steps, not what the hardware could do in a clean setup. That cost is
+measured in the stage 1 notes.
 
 ## Run it
 
@@ -152,30 +172,3 @@ Two numbers say where the bottleneck is. Rising event loop lag means the Node
 process is CPU bound. `pg_pool_waiting_requests` above zero means requests are
 queuing for a database connection. If both are calm and latency is high, the
 database itself is slow.
-
-## Docs
-
-One file per stage: what I did, the numbers, what I learned.
-
-| File                                              | What is in it                          |
-| ------------------------------------------------- | -------------------------------------- |
-| [00-starting-point.md](docs/00-starting-point.md) | Design decisions and what I left out   |
-| [01-baseline.md](docs/01-baseline.md)             | The untouched system, 1 RPS            |
-| [02-indexes.md](docs/02-indexes.md)               | One index, 30x capacity                |
-| [03-index-choice.md](docs/03-index-choice.md)     | Four indexes for one query, 300x apart |
-| [04-n-plus-one.md](docs/04-n-plus-one.md)         | 42 queries down to 3                   |
-
-## What comes next
-
-1. Running Node on all cores instead of one.
-2. Behaviour under overload. The server queues forever instead of refusing work.
-3. Redis in front of the read endpoints.
-
-## What this is not
-
-- Not production code. No auth, no rate limits, no tests yet.
-- The N+1 queries in the early commits are deliberate. Stage 4 removes them.
-- Numbers come from one desktop machine with the load generator on it. They show
-  differences between steps, not what this hardware could do in a clean setup.
-- I have not run any of this in production. It is a learning project and the
-  numbers are mine to defend, not to advertise.
