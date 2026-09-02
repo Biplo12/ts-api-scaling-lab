@@ -1,23 +1,15 @@
 # Starting point
 
-Decisions I made before writing any code, and what I left out on purpose.
-
-Machine, stack, table sizes and endpoints are in the [README](../README.md).
+What the code looked like before any optimization, and why.
 
 ## Schema decisions
 
-**Every table carries org_id.** Even where it could be derived by joining. Every
-query filters by organization, so I want that column at hand.
-
-**IDs are bigint identity, not UUID.** They grow in order, so new rows land at
-the end of the index. Random UUIDs would scatter writes across the whole index
-and make it grow faster. I plan to measure this difference later.
-
-**Timestamps are timestamptz.** Plain timestamp loses the time zone. It is the
-kind of mistake that only hurts months later.
-
-**Enums are Postgres enums.** They take 4 bytes instead of a string. Adding a
-value later is easy, removing one is not, so I fixed the lists up front.
+| Decision                          | Reason                                |
+| --------------------------------- | ------------------------------------- |
+| `org_id` on every table           | every query filters by organization   |
+| `bigint identity` instead of UUID | sequential IDs keep the index compact |
+| `timestamptz` everywhere          | plain `timestamp` loses the time zone |
+| Postgres enums                    | 4 bytes instead of a string           |
 
 ## Postgres settings
 
@@ -28,27 +20,22 @@ Defaults, nothing touched.
 | shared_buffers | 128 MB |
 | work_mem       | 4 MB   |
 
-The database is 1003 MB, so most of it does not fit in the cache. Raising this is
-one of the things I will measure.
+The database is 1003 MB, so most of it does not fit in cache.
 
-## Missing on purpose
+## Left out on purpose
 
-None of this is an oversight.
+- No indexes beyond primary keys and unique constraints.
+- Foreign keys without indexes. Postgres does not add them by itself.
+- No connection pooler, no cache, no metrics.
+- Queries written the plain way, N+1 included.
 
-- **No indexes** beyond primary keys and unique constraints.
-- **Foreign keys have no indexes.** Postgres does not create them by itself. This
-  is what makes the first measurements so bad.
-- **No connection pooler.**
-- **No cache.**
-- **No metrics.**
-- **Queries written the plain way**, N+1 included.
-
-The project is about the path from here. If the first version were fast, there
-would be nothing to show.
+If the first version were fast, there would be nothing to show.
 
 ## Stages
 
-| Stage | Notes                                      |
-| ----- | ------------------------------------------ |
-| 1     | [Baseline](01-baseline.md)                 |
-| 2     | Indexes (next)                             |
+|     |                                          | Capacity |
+| --- | ---------------------------------------- | -------- |
+| 1   | [Baseline](01-baseline.md)               | 1 RPS    |
+| 2   | [First index](02-indexes.md)             | 30 RPS   |
+| 3   | [Choosing the index](03-index-choice.md) | 120 RPS  |
+| 4   | [Removing N+1](04-n-plus-one.md)         | 400 RPS  |

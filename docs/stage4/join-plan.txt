@@ -1,0 +1,25 @@
+                                                                          QUERY PLAN                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.73..39.06 rows=20 width=133) (actual time=0.611..3.304 rows=20.00 loops=1)
+   Buffers: shared hit=59
+   ->  Nested Loop Left Join  (cost=0.73..148980.96 rows=77728 width=133) (actual time=0.610..3.299 rows=20.00 loops=1)
+         Buffers: shared hit=59
+         ->  Index Scan using tasks_project_created_idx on tasks t  (cost=0.43..133760.99 rows=77728 width=123) (actual time=0.064..1.054 rows=20.00 loops=1)
+               Index Cond: (project_id = 1)
+               Index Searches: 1
+               Buffers: shared hit=26
+         ->  Memoize  (cost=0.30..0.36 rows=1 width=18) (actual time=0.111..0.111 rows=0.55 loops=20)
+               Cache Key: t.assignee_id
+               Cache Mode: logical
+               Hits: 8  Misses: 12  Evictions: 0  Overflows: 0  Memory Usage: 2kB
+               Buffers: shared hit=33
+               ->  Index Scan using users_pkey on users u  (cost=0.29..0.35 rows=1 width=18) (actual time=0.136..0.136 rows=0.92 loops=12)
+                     Index Cond: (id = t.assignee_id)
+                     Index Searches: 11
+                     Buffers: shared hit=33
+ Planning:
+   Buffers: shared hit=287
+ Planning Time: 0.662 ms
+ Execution Time: 3.470 ms
+(21 rows)
+

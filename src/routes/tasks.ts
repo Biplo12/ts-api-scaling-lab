@@ -18,82 +18,74 @@ const commentBody = {
   },
 } as const;
 
-interface GetTaskParams {
-  id: number;
-}
-
 export default async function taskRoutes(app: FastifyInstance): Promise<void> {
-  app.get<{ Params: GetTaskParams }>(
+  app.get<{ Params: { id: number } }>(
     '/tasks/:id',
     { schema: { params: idParams } },
     async (request, reply) => {
       const taskId = request.params.id;
 
-      const task = await db.query.tasks.findFirst({
-        where: eq(schema.tasks.id, taskId),
-      });
+      const [row] = await db
+        .select({
+          task: schema.tasks,
+          project: schema.projects,
+          organization: schema.organizations,
+          assignee: schema.users,
+        })
+        .from(schema.tasks)
+        .innerJoin(schema.projects, eq(schema.projects.id, schema.tasks.projectId))
+        .innerJoin(schema.organizations, eq(schema.organizations.id, schema.tasks.orgId))
+        .leftJoin(schema.users, eq(schema.users.id, schema.tasks.assigneeId))
+        .where(eq(schema.tasks.id, taskId))
+        .limit(1);
 
-      if (!task) {
+      if (!row) {
         return reply.status(404).send({ error: 'Task not found' });
       }
 
-      const project = await db.query.projects.findFirst({
-        where: eq(schema.projects.id, task.projectId),
-      });
-
-      const organization = await db.query.organizations.findFirst({
-        where: eq(schema.organizations.id, task.orgId),
-      });
-
-      const assignee = task.assigneeId
-        ? await db.query.users.findFirst({ where: eq(schema.users.id, task.assigneeId) })
-        : null;
-
-      const comments = await db
-        .select()
+      const commentRows = await db
+        .select({
+          comment: schema.comments,
+          authorName: schema.users.name,
+        })
         .from(schema.comments)
+        .leftJoin(schema.users, eq(schema.users.id, schema.comments.authorId))
         .where(eq(schema.comments.taskId, taskId))
         .orderBy(desc(schema.comments.createdAt))
         .limit(10);
 
-      const withAuthors = [];
-      for (const comment of comments) {
-        const author = await db.query.users.findFirst({
-          where: eq(schema.users.id, comment.authorId),
-        });
-        withAuthors.push({ ...comment, authorName: author?.name ?? null });
-      }
-
-      return { task, project, organization, assignee, comments: withAuthors };
+      return {
+        task: row.task,
+        project: row.project,
+        organization: row.organization,
+        assignee: row.assignee,
+        comments: commentRows.map((c) => ({ ...c.comment, authorName: c.authorName })),
+      };
     },
   );
 
-  interface CreateCommentForTaskParams {
-    id: number;
-  }
-  interface CreateCommentForTaskBody {
-    content: string;
-    authorId: number;
-  }
-
-  app.post<{ Params: CreateCommentForTaskParams; Body: CreateCommentForTaskBody }>(
+  app.post<{ Params: { id: number }; Body: { content: string; authorId: number } }>(
     '/tasks/:id/comments',
     { schema: { params: idParams, body: commentBody } },
     async (request, reply) => {
       const taskId = request.params.id;
       const { content, authorId } = request.body;
 
-      const task = await db.query.tasks.findFirst({
-        where: eq(schema.tasks.id, taskId),
-      });
+      const [task] = await db
+        .select({ id: schema.tasks.id, orgId: schema.tasks.orgId })
+        .from(schema.tasks)
+        .where(eq(schema.tasks.id, taskId))
+        .limit(1);
 
       if (!task) {
         return reply.status(404).send({ error: 'Task not found' });
       }
 
-      const author = await db.query.users.findFirst({
-        where: eq(schema.users.id, authorId),
-      });
+      const [author] = await db
+        .select({ id: schema.users.id, orgId: schema.users.orgId })
+        .from(schema.users)
+        .where(eq(schema.users.id, authorId))
+        .limit(1);
 
       if (!author) {
         return reply.status(404).send({ error: 'Author not found' });

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { count, desc, eq } from 'drizzle-orm';
+import { count, desc, eq, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
 
@@ -9,12 +9,8 @@ const idParams = {
   properties: { id: { type: 'integer', minimum: 1 } },
 } as const;
 
-interface GetProjectTasksParams {
-  id: number;
-}
-
 export default async function projectRoutes(app: FastifyInstance): Promise<void> {
-  app.get<{ Params: GetProjectTasksParams }>(
+  app.get<{ Params: { id: number } }>(
     '/projects/:id/tasks',
     { schema: { params: idParams } },
     async (request, reply) => {
@@ -30,32 +26,36 @@ export default async function projectRoutes(app: FastifyInstance): Promise<void>
         return reply.status(404).send({ error: 'Project not found' });
       }
 
-      const tasks = await db
-        .select()
+      const rows = await db
+        .select({
+          task: schema.tasks,
+          assigneeName: schema.users.name,
+        })
         .from(schema.tasks)
+        .leftJoin(schema.users, eq(schema.users.id, schema.tasks.assigneeId))
         .where(eq(schema.tasks.projectId, projectId))
         .orderBy(desc(schema.tasks.createdAt))
         .limit(20);
 
-      const items = [];
-      for (const task of tasks) {
-        const assignee = task.assigneeId
-          ? await db.query.users.findFirst({ where: eq(schema.users.id, task.assigneeId) })
-          : null;
+      const taskIds = rows.map((r) => r.task.id);
 
-        const [commentCount] = await db
-          .select({ value: count() })
-          .from(schema.comments)
-          .where(eq(schema.comments.taskId, task.id));
+      const counts = taskIds.length
+        ? await db
+            .select({ taskId: schema.comments.taskId, total: count() })
+            .from(schema.comments)
+            .where(inArray(schema.comments.taskId, taskIds))
+            .groupBy(schema.comments.taskId)
+        : [];
 
-        items.push({
-          ...task,
-          assigneeName: assignee?.name ?? null,
-          commentCount: commentCount?.value ?? 0,
-        });
-      }
+      const countByTask = new Map(counts.map((c) => [c.taskId, Number(c.total)]));
 
-      return { project, tasks: items };
+      const tasks = rows.map((r) => ({
+        ...r.task,
+        assigneeName: r.assigneeName,
+        commentCount: countByTask.get(r.task.id) ?? 0,
+      }));
+
+      return { project, tasks };
     },
   );
 }
