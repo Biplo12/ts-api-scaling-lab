@@ -1,14 +1,14 @@
 # Stage 3: Choosing the index
 
-Indexed `tasks.project_id`. It took four attempts to get it right.
+Indexing `tasks.project_id` took four attempts.
 
 **Capacity: 30 RPS to 120 RPS.**
 
 ![Four indexes](img/stage3-index-choice.svg)
 
-## The problem
+## What I got wrong first
 
-I assumed the 42 queries were the bottleneck. The plan said otherwise:
+I assumed the 42 queries were the bottleneck. The plan disagreed:
 
 ```
 Parallel Seq Scan on tasks   62 ms
@@ -16,8 +16,9 @@ Rows Removed by Filter:      666 636 x 3 workers
 Execution Time:              66.8 ms
 ```
 
-**One query out of 42 was 80 percent of the time.** The other 41 together took
-about 15 ms, because stage 2 turned them into Index Only Scans.
+One query out of 42 was 80 percent of the time. The other 41 together took about
+15 ms, because stage 2 turned them into Index Only Scans. Fixing N+1 first would
+have been work on the wrong thing.
 
 ## The query
 
@@ -25,10 +26,10 @@ about 15 ms, because stage 2 turned them into Index Only Scans.
 WHERE project_id = X ORDER BY created_at DESC LIMIT 20
 ```
 
-Measured on project 1, which has 73 692 tasks. That matters: the traffic
-generator is skewed towards low IDs, so this project gets the most requests.
+Measured on project 1, which has 73 692 tasks. That matters. The traffic
+generator is skewed towards low ids, so this project gets hit most.
 
-## Numbers
+## Four attempts
 
 | Index                                       | Plan               | Time         |
 | ------------------------------------------- | ------------------ | ------------ |
@@ -45,14 +46,14 @@ The endpoints, median of 15 runs:
 | /projects/4200/tasks | 82 ms   | 34 ms   |
 | /projects/1/tasks    | ~350 ms | 32 ms   |
 
-The big project and the small one now cost the same.
+The big project and a small one now cost the same.
 
 ## The NULLS trap
 
 `ORDER BY x DESC` in Postgres means `DESC NULLS FIRST`. Drizzle's `.desc()`
 generates `DESC NULLS LAST`. The orders do not match, so the planner cannot use
-the index for sorting, even though `created_at` is NOT NULL and the two are
-identical in practice.
+the index for sorting. `created_at` is NOT NULL and the two are identical in
+practice, but the planner does not use that.
 
 Same index, only the query changed:
 
@@ -61,7 +62,7 @@ Same index, only the query changed:
 | `ORDER BY created_at DESC`            | Bitmap Scan + Sort | 53 ms    |
 | `ORDER BY created_at DESC NULLS LAST` | Index Scan         | 0.281 ms |
 
-I fixed the index instead of the query, so application code stays plain:
+I fixed the index rather than the query, so the application code stays plain:
 
 ```ts
 index('tasks_project_created_idx').on(t.projectId, t.createdAt.desc().nullsFirst());
@@ -69,20 +70,25 @@ index('tasks_project_created_idx').on(t.projectId, t.createdAt.desc().nullsFirst
 
 ## Notes
 
-- An index can make a query slower. 326 ms with it, 140 ms without. Bitmap Heap
-  Scan plus random block access lost to a plain sequential read. 73 692 of
-  2 000 000 rows was not selective enough.
-- A composite index is useless if the sort order does not match. Three of four
-  attempts read all 73 692 rows; only the last read 20.
-- I found it by reading the plan. The 53 ms result looked like a win. The word
-  `Sort` is what said something was still wrong.
-- One test run lied. A 60 RPS run showed p95 of 1.86 s right after a 200 RPS run
-  had overloaded the machine. Three runs at 80 RPS gave 44.3, 44.8 and 41.4 ms.
-  Tests now go from low rate to high, with a pause between them.
+An index made the query slower. 326 ms with it against 140 ms without. Bitmap
+Heap Scan visited 9817 blocks in random order and then sorted 73 692 rows, while
+a sequential read gets the same data in order. Three point seven percent of the
+table was not selective enough for an index to pay off.
+
+A composite index is useless if the sort order does not match. Three of the four
+attempts read all 73 692 rows to return 20.
+
+I only found it by reading the plan. The 53 ms result looked like a win. The
+endpoint was faster, the number went down. The word `Sort` in the plan was the
+only thing saying something was still wrong.
+
+One test run lied to me. A 60 RPS run showed p95 of 1.86 s, right after a 200 RPS
+run had overloaded the machine. Three separate runs at 80 RPS gave 44.3, 44.8 and
+41.4 ms. Tests now go from low rate to high with a pause in between.
 
 Plans: [stage3/](stage3)
 
 ## Next
 
 The task list is 34 ms and its main query is 0.178 ms of that. The remaining 41
-queries are now the whole cost.
+queries are now the entire cost.

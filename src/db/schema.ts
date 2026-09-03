@@ -89,9 +89,7 @@ export const tasks = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (t) => [
-    index('tasks_project_created_idx').on(t.projectId, t.createdAt.desc().nullsFirst()),
-  ],
+  (t) => [index('tasks_project_created_idx').on(t.projectId, t.createdAt.desc().nullsFirst())],
 );
 
 export const comments = pgTable(

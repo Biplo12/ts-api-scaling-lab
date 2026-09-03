@@ -15,7 +15,7 @@ function skewed(max, power = 3) {
 }
 
 export const options = {
-  summaryTrendStats: ["avg", "min", "med", "p(95)", "p(99)", "max"],
+  summaryTrendStats: ['avg', 'min', 'med', 'p(95)', 'p(99)', 'max'],
   scenarios: {
     load: {
       executor: 'constant-arrival-rate',

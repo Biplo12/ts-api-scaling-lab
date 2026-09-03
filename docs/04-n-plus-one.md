@@ -18,18 +18,13 @@ for (const task of tasks) {
 }
 ```
 
-Each query was fast after stage 3. The main one was 0.178 ms out of 34 ms total.
-The cost was the remaining 41 round trips.
+After stage 3 each of those was fast. The main query was 0.178 ms out of 34 ms
+total. The cost was the 41 round trips.
 
 ## The change
 
-The assignee comes from a join:
-
-```ts
-.leftJoin(schema.users, eq(schema.users.id, schema.tasks.assigneeId))
-```
-
-The comment counts come from one grouped query for all 20 tasks at once:
+The assignee comes from a join. The comment counts come from one grouped query
+for all 20 tasks:
 
 ```ts
 .select({ taskId: schema.comments.taskId, total: count() })
@@ -37,15 +32,15 @@ The comment counts come from one grouped query for all 20 tasks at once:
 .groupBy(schema.comments.taskId)
 ```
 
-`/tasks/:id` got the same treatment: two joins instead of five queries, and the
-comment authors come with the comments instead of a loop.
+`/tasks/:id` got the same treatment. Comment authors arrive with the comments
+instead of one query each.
 
 ## Numbers
 
-| Endpoint            | Queries before | Queries after |
-| ------------------- | -------------- | ------------- |
-| /projects/:id/tasks | 42             | 3             |
-| /tasks/:id          | 15             | 2             |
+| Endpoint            | Queries before | After |
+| ------------------- | -------------- | ----- |
+| /projects/:id/tasks | 42             | 3     |
+| /tasks/:id          | 15             | 2     |
 
 Median of 15 runs:
 
@@ -65,25 +60,27 @@ Under load:
 
 ## Notes
 
-- The join kept the index from stage 3. Worth checking, because adding a join
-  can make the planner pick a different path:
+The join kept the index from stage 3, which was worth checking. Adding a join can
+make the planner pick a different path:
 
-  ```
-  Nested Loop Left Join
-    -> Index Scan using tasks_project_created_idx (20 rows)
-    -> Index Scan using users_pkey (12 loops)
-  Execution Time: 3.470 ms
-  ```
+```
+Nested Loop Left Join
+  -> Index Scan using tasks_project_created_idx (20 rows)
+  -> Index Scan using users_pkey (12 loops)
+Execution Time: 3.470 ms
+```
 
-- This was the cheapest stage. No new indexes, nothing added to the database,
-  just two rewritten queries.
-- 400 RPS at p95 of 8.2 ms was better than 200 RPS at 13.3 ms. Warm cache, and a
-  reminder that single runs mean little.
-- The failure mode still has not changed. At 600 RPS requests are dropped by the
-  load generator, not refused by the server.
+Cheapest stage so far. No new indexes, nothing added to the database, two
+rewritten queries.
+
+400 RPS gave p95 of 8.2 ms while 200 RPS gave 13.3 ms. Warm cache, and another
+reminder that one run means little.
+
+The failure mode still has not changed. At 600 RPS requests are dropped by the
+load generator, not refused by the server.
 
 Plan: [stage4/join-plan.txt](stage4/join-plan.txt)
 
 ## Next
 
-The server still runs on one core out of six. That is the next cheap win.
+The server runs on one core out of six.

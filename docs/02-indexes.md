@@ -1,6 +1,6 @@
 # Stage 2: First index
 
-Added one index, on `comments.task_id`, and measured only that.
+One index, on `comments.task_id`. Nothing else changed.
 
 **Capacity: 1 RPS to 30 RPS.**
 
@@ -17,7 +17,7 @@ The task list runs 20 counts over the comments table, one per task. The table is
 (t) => [index('comments_task_id_idx').on(t.taskId)];
 ```
 
-Built in 3.2 seconds, takes 65 MB.
+Three seconds to build, 65 MB on disk.
 
 ## Numbers
 
@@ -37,24 +37,27 @@ The endpoints, median of 15 runs:
 | /tasks/:id          | 104 ms  | 10.9 ms |
 | /projects/:id/tasks | 2244 ms | 82 ms   |
 
-Under load the task list held 132 ms median at 30 RPS. At 40 RPS it stopped
-keeping up.
+Under load the task list held 132 ms median at 30 RPS. At 40 it gave up.
 
 ## Notes
 
-- One index gave 30x capacity. Nothing else changed, which is why measuring one
-  change at a time is worth the extra runs.
-- `Heap Fetches: 0` means the count is answered from the index alone. That
-  worked here by luck: the query only needs `task_id`, which is the indexed
-  column.
-- The failure mode did not change. At 40 RPS there are still zero errors, the
-  system just queues.
-- The task list still runs 42 queries for one page.
+Thirty times the capacity from one index. Nothing else was touched, which is the
+whole reason for measuring one change at a time.
+
+`Heap Fetches: 0` means the count is answered from the index alone and the table
+is never opened. That happened by luck here: the query needs only `task_id`,
+which is the indexed column. If it needed anything else the gain would be
+smaller.
+
+The way it fails has not changed. At 40 RPS there are still zero errors, the
+server just queues.
+
+The task list still runs 42 queries for one page.
 
 Plans: [before](stage2/before-count-comments.txt),
 [after](stage2/after-count-comments.txt)
 
 ## Next
 
-The remaining big query is the task list itself, still a sequential scan over
-2 million rows.
+The big query is now the task list itself, still a sequential scan over 2 million
+rows.

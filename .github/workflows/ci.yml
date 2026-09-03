@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: types, lint, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn typecheck
+
+      - run: yarn lint
+
+      - run: yarn format:check
+
+      - run: yarn build
+
+  migrate:
+    name: migrations apply to a clean database
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: lab
+          POSTGRES_PASSWORD: lab
+          POSTGRES_DB: lab
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://lab:lab@localhost:5432/lab
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn db:migrate
+
+      - name: check every table exists
+        run: |
+          for t in organizations users projects project_members tasks comments; do
+            psql "$DATABASE_URL" -c "SELECT 1 FROM $t LIMIT 1" > /dev/null
+          done
+
+      - name: check the indexes from stages 2 and 3 exist
+        run: |
+          psql "$DATABASE_URL" -tAc "SELECT indexname FROM pg_indexes WHERE tablename IN ('tasks','comments') ORDER BY 1"
+          psql "$DATABASE_URL" -tAc "SELECT count(*) FROM pg_indexes WHERE indexname IN ('comments_task_id_idx','tasks_project_created_idx')" | grep -qx 2
