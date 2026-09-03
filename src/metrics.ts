@@ -1,6 +1,7 @@
 import { collectDefaultMetrics, Counter, Gauge, Histogram, Registry } from 'prom-client';
 import { pool } from './db/index.js';
 import { inflight } from './inflight.js';
+import { cacheStats } from './cache.js';
 
 export const registry = new Registry();
 
@@ -53,5 +54,41 @@ new Gauge({
   registers: [registry],
   collect() {
     this.set(pool.waitingCount);
+  },
+});
+
+new Gauge({
+  name: 'cache_hits_total',
+  help: 'Cache reads served from Redis',
+  registers: [registry],
+  collect() {
+    this.set(cacheStats.hits);
+  },
+});
+
+new Gauge({
+  name: 'cache_misses_total',
+  help: 'Cache reads that had to hit Postgres',
+  registers: [registry],
+  collect() {
+    this.set(cacheStats.misses);
+  },
+});
+
+new Gauge({
+  name: 'cache_coalesced_total',
+  help: 'Misses that waited on an in-flight build instead of querying',
+  registers: [registry],
+  collect() {
+    this.set(cacheStats.coalesced);
+  },
+});
+
+new Gauge({
+  name: 'cache_errors_total',
+  help: 'Redis errors',
+  registers: [registry],
+  collect() {
+    this.set(cacheStats.errors);
   },
 });

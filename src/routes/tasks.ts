@@ -2,27 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import * as schema from '../db/schema.js';
-import {
-  commentShape,
-  idParams,
-  organizationShape,
-  projectShape,
-  taskShape,
-  userShape,
-} from './schemas.js';
-
-const detailResponse = {
-  200: {
-    type: 'object',
-    properties: {
-      task: taskShape,
-      project: projectShape,
-      organization: organizationShape,
-      assignee: userShape,
-      comments: { type: 'array', items: commentShape },
-    },
-  },
-} as const;
+import { cached, cacheKeys, invalidate } from '../cache.js';
+import { idParams } from './schemas.js';
 
 const commentBody = {
   type: 'object',
@@ -61,7 +42,7 @@ const taskComments = db
   .prepare('task_comments');
 
 const taskOrg = db
-  .select({ id: schema.tasks.id, orgId: schema.tasks.orgId })
+  .select({ id: schema.tasks.id, orgId: schema.tasks.orgId, projectId: schema.tasks.projectId })
   .from(schema.tasks)
   .where(eq(schema.tasks.id, sql.placeholder('id')))
   .limit(1)
@@ -77,7 +58,7 @@ const userOrg = db
 export default async function taskRoutes(app: FastifyInstance): Promise<void> {
   app.get<{ Params: { id: number } }>(
     '/tasks/:id',
-    { schema: { params: idParams, response: detailResponse } },
+    { schema: { params: idParams } },
     async (request, reply) => {
       const taskId = request.params.id;
 
@@ -87,15 +68,19 @@ export default async function taskRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(404).send({ error: 'Task not found' });
       }
 
-      const commentRows = await taskComments.execute({ taskId });
+      const payload = await cached(cacheKeys.task(taskId), async () => {
+        const commentRows = await taskComments.execute({ taskId });
 
-      return {
-        task: row.task,
-        project: row.project,
-        organization: row.organization,
-        assignee: row.assignee,
-        comments: commentRows.map((c) => ({ ...c.comment, authorName: c.authorName })),
-      };
+        return {
+          task: row.task,
+          project: row.project,
+          organization: row.organization,
+          assignee: row.assignee,
+          comments: commentRows.map((c) => ({ ...c.comment, authorName: c.authorName })),
+        };
+      });
+
+      return reply.type('application/json').send(payload);
     },
   );
 
@@ -131,6 +116,8 @@ export default async function taskRoutes(app: FastifyInstance): Promise<void> {
           orgId: task.orgId,
         })
         .returning();
+
+      await invalidate([cacheKeys.task(taskId), cacheKeys.projectTasks(task.projectId)]);
 
       return reply.status(201).send({ comment });
     },

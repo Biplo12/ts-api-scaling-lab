@@ -20,11 +20,12 @@ part is not the final number but which change gave what.
 | 5     | Node on 4 processes instead of 1   | 1200 RPS | 46 ms     | 1230 ms             |
 | 6     | timeouts and load shedding         | 1200 RPS | 46 ms     | 209 ms              |
 | 7     | prepared statements, schemas       | 2000 RPS | 57 ms     | 93 ms               |
+| 8     | Redis cache with singleflight      | 2600 RPS | 55 ms     | 65 ms               |
 
-2000x capacity on unchanged hardware. Offered 2000 RPS the server holds p99 at
-93 ms and returns 503 to anything it cannot take, where the first version needed
-5 seconds to answer a single request. The setup itself tops out near 15 000 RPS
-on an endpoint that returns a constant.
+2600x capacity on unchanged hardware, with p99 under 100 ms and an honest 503
+above capacity. The first version needed 5 seconds to answer a single request.
+The setup itself tops out near 15 000 RPS on an endpoint that returns a
+constant, so the remaining gap is still large.
 
 ## Contents
 
@@ -50,6 +51,7 @@ Each file has the same shape: what I did, the numbers, what I learned.
 | [05-cluster.md](docs/05-cluster.md)                         | Four processes beat six, and why            |
 | [06-overload.md](docs/06-overload.md)                       | Refusing work instead of queueing it        |
 | [07-cost-of-abstraction.md](docs/07-cost-of-abstraction.md) | Where CPU actually goes, and 39% less of it |
+| [08-cache.md](docs/08-cache.md)                             | Cache, and why TTL did not matter           |
 
 ## Why the first version was slow
 
@@ -103,8 +105,8 @@ writes.
 Intel Core, 6 cores and 12 threads, 2.6 GHz with boost to 4.4 GHz. 32 GB RAM,
 NVMe disk, Windows 11.
 
-Node 24, TypeScript 6, Fastify 5, Postgres 18, Drizzle 0.45, pg 8, prom-client,
-k6.
+Node 24, TypeScript 6, Fastify 5, Postgres 18, Drizzle 0.45, pg 8, Redis 8,
+ioredis, prom-client, k6.
 
 Node runs on Windows, Postgres in Docker, k6 on the same machine. The load
 generator competes for CPU with the server, so these numbers show differences
@@ -116,6 +118,8 @@ measured in the stage 1 notes.
 ```bash
 docker compose up -d
 ```
+
+That starts Postgres and Redis.
 
 ```bash
 yarn install
@@ -164,8 +168,10 @@ runs:
 k6 run -e RATE=100 -e DURATION=30s bench/load.js
 ```
 
-`WORKERS` in `.env` sets how many Node processes to run. On this machine 4 is
-the best value and 6 is worse than 4, which stage 5 explains.
+`.env` holds the knobs worth playing with: `WORKERS` (4 is best here, 6 is worse,
+stage 5 explains why), `MAX_INFLIGHT` (the latency dial from stage 6), `CACHE`,
+`SINGLEFLIGHT` and `CACHE_TTL_S` (stage 8). Every one of them can be switched off
+to reproduce the measurement without it.
 
 Use `127.0.0.1`, never `localhost`. On Windows the name costs 206 ms per
 request, which is explained in the stage 1 notes.
