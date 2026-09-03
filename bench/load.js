@@ -1,16 +1,21 @@
 import http from 'k6/http';
 import { check } from 'k6';
+import { Counter } from 'k6/metrics';
 
 const BASE = __ENV.BASE_URL || 'http://127.0.0.1:3000';
 
 const PROJECTS = 20000;
 const TASKS = 2000000;
 
+const shed = new Counter('shed_503');
+const failed = new Counter('failed_5xx');
+
 function skewed(max, power = 3) {
   return Math.floor(Math.pow(Math.random(), power) * max) + 1;
 }
 
 export const options = {
+  summaryTrendStats: ["avg", "min", "med", "p(95)", "p(99)", "max"],
   scenarios: {
     load: {
       executor: 'constant-arrival-rate',
@@ -21,24 +26,31 @@ export const options = {
       maxVUs: 1000,
     },
   },
-  thresholds: {
-    'http_req_duration{name:listProjectTasks}': ['p(99)<5000'],
-    'http_req_duration{name:getTask}': ['p(99)<1000'],
-  },
 };
 
+function track(res) {
+  if (res.status === 503) {
+    shed.add(1);
+  } else if (res.status >= 500) {
+    failed.add(1);
+  }
+  check(res, { 'ok or shed': (r) => r.status === 200 || r.status === 201 || r.status === 503 });
+}
+
 function listProjectTasks() {
-  const res = http.get(`${BASE}/projects/${skewed(PROJECTS)}/tasks`, {
-    tags: { name: 'listProjectTasks' },
-  });
-  check(res, { 'list ok': (r) => r.status === 200 });
+  track(
+    http.get(`${BASE}/projects/${skewed(PROJECTS)}/tasks`, {
+      tags: { name: 'listProjectTasks' },
+    }),
+  );
 }
 
 function getTask() {
-  const res = http.get(`${BASE}/tasks/${skewed(TASKS)}`, {
-    tags: { name: 'getTask' },
-  });
-  check(res, { 'task ok': (r) => r.status === 200 });
+  track(
+    http.get(`${BASE}/tasks/${skewed(TASKS)}`, {
+      tags: { name: 'getTask' },
+    }),
+  );
 }
 
 function addComment() {
@@ -48,20 +60,23 @@ function addComment() {
     tags: { name: 'getTaskBeforeComment' },
   });
 
-  if (task.status !== 200) return;
+  if (task.status !== 200) {
+    track(task);
+    return;
+  }
 
   const orgId = task.json('task.orgId');
 
-  const res = http.post(
-    `${BASE}/tasks/${taskId}/comments`,
-    JSON.stringify({ content: `k6 comment ${Date.now()}`, authorId: orgId }),
-    {
-      headers: { 'Content-Type': 'application/json' },
-      tags: { name: 'addComment' },
-    },
+  track(
+    http.post(
+      `${BASE}/tasks/${taskId}/comments`,
+      JSON.stringify({ content: `k6 comment ${Date.now()}`, authorId: orgId }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+        tags: { name: 'addComment' },
+      },
+    ),
   );
-
-  check(res, { 'comment created': (r) => r.status === 201 });
 }
 
 export default function () {

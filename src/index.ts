@@ -3,6 +3,7 @@ import { buildApp } from './app.js';
 
 const PORT = Number(process.env.PORT) || 3000;
 const WORKERS = Number(process.env.WORKERS) || 1;
+const PROFILE_MS = Number(process.env.PROFILE_MS) || 0;
 
 if (WORKERS > 1 && cluster.isPrimary) {
   if (process.env.SCHED === 'rr') {
@@ -18,6 +19,12 @@ if (WORKERS > 1 && cluster.isPrimary) {
   });
 } else {
   const app = await buildApp();
+
+  if (PROFILE_MS > 0) {
+    setTimeout(() => {
+      process.exit(0);
+    }, PROFILE_MS);
+  }
 
   try {
     await app.listen({ port: PORT, host: '0.0.0.0' });

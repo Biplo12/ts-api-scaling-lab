@@ -18,9 +18,12 @@ part is not the final number but which change gave what.
 | 3     | the right composite index on tasks | 120 RPS  | 197 ms           |
 | 4     | joins instead of N+1               | 400 RPS  | 8 ms             |
 | 5     | Node on 4 processes instead of 1   | 1200 RPS | 69 ms            |
+| 6     | timeouts and load shedding         | 1200 RPS | 209 ms at 2000   |
 
-Five changes, 1200x capacity, same hardware. The setup itself tops out around
-15 000 RPS on an endpoint that returns a constant, so there is still room.
+1200x capacity on unchanged hardware, and the last step caps latency instead of
+raising throughput. Offered 2000 RPS, the server now holds p99 at 209 ms and
+returns 503 to the excess, where before it accepted everything and made everyone
+wait 1.2 seconds.
 
 ## Contents
 
@@ -44,6 +47,7 @@ Each file has the same shape: what I did, the numbers, what I learned.
 | [03-index-choice.md](docs/03-index-choice.md)     | Four indexes for one query, 300x apart |
 | [04-n-plus-one.md](docs/04-n-plus-one.md)         | 42 queries down to 3                   |
 | [05-cluster.md](docs/05-cluster.md)               | Four processes beat six, and why       |
+| [06-overload.md](docs/06-overload.md)             | Refusing work instead of queueing it   |
 
 ## Why the first version was slow
 
@@ -85,6 +89,9 @@ later.
 | GET    | /projects/:id/tasks | 3       | was 42 before stage 4      |
 | POST   | /tasks/:id/comments | 4       |                            |
 | GET    | /metrics            | 0       | Prometheus format          |
+
+Above capacity the server returns 503 with `retry-after` instead of queueing.
+`/health` and `/metrics` are exempt from that check.
 
 Load test traffic is split 60 / 30 / 10 between the task list, task details, and
 writes.

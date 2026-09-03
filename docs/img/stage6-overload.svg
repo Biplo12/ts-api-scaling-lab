@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 290" width="760" height="290" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .title { fill: #1f2328; font-size: 14px; font-weight: 600; }
+    .axis { stroke: #d0d7de; stroke-width: 1; }
+    .grid { stroke: #d0d7de; stroke-width: 1; stroke-dasharray: 3 3; }
+    .tick { fill: #656d76; font-size: 10px; }
+    .note { fill: #656d76; font-size: 11px; }
+    .lbad { stroke: #f85149; stroke-width: 2.5; fill: none; }
+    .lgood { stroke: #3fb950; stroke-width: 2.5; fill: none; }
+    .dbad { fill: #f85149; }
+    .dgood { fill: #3fb950; }
+    .vbad { fill: #f85149; font-size: 10px; font-weight: 600; }
+    .vgood { fill: #3fb950; font-size: 10px; font-weight: 600; }
+    @media (prefers-color-scheme: dark) {
+      .title { fill: #f0f6fc; }
+      .axis { stroke: #3d444d; }
+      .grid { stroke: #3d444d; }
+      .tick { fill: #9198a1; }
+      .note { fill: #9198a1; }
+    }
+  </style>
+
+  <text x="20" y="22" class="title">p99 of accepted requests, as load goes past capacity</text>
+
+  <line x1="100" y1="57" x2="700" y2="57" class="grid"/>
+  <line x1="100" y1="89" x2="700" y2="89" class="grid"/>
+  <line x1="100" y1="122" x2="700" y2="122" class="grid"/>
+  <line x1="100" y1="155" x2="700" y2="155" class="grid"/>
+  <line x1="100" y1="187" x2="700" y2="187" class="grid"/>
+  <line x1="100" y1="220" x2="700" y2="220" class="axis"/>
+
+  <text x="92" y="61" text-anchor="end" class="tick">1250 ms</text>
+  <text x="92" y="93" text-anchor="end" class="tick">1000 ms</text>
+  <text x="92" y="126" text-anchor="end" class="tick">750 ms</text>
+  <text x="92" y="159" text-anchor="end" class="tick">500 ms</text>
+  <text x="92" y="191" text-anchor="end" class="tick">250 ms</text>
+  <text x="92" y="224" text-anchor="end" class="tick">0</text>
+
+  <text x="100" y="240" text-anchor="middle" class="tick">400</text>
+  <text x="250" y="240" text-anchor="middle" class="tick">800</text>
+  <text x="400" y="240" text-anchor="middle" class="tick">1200</text>
+  <text x="550" y="240" text-anchor="middle" class="tick">1600</text>
+  <text x="700" y="240" text-anchor="middle" class="tick">2000</text>
+  <text x="400" y="256" text-anchor="middle" class="tick">requests per second offered</text>
+
+  <polyline points="100,213 250,211 400,188 550,93 700,59" class="lbad"/>
+  <circle cx="100" cy="213" r="4" class="dbad"/>
+  <circle cx="250" cy="211" r="4" class="dbad"/>
+  <circle cx="400" cy="188" r="4" class="dbad"/>
+  <circle cx="550" cy="93" r="4" class="dbad"/>
+  <circle cx="700" cy="59" r="4" class="dbad"/>
+  <text x="550" y="84" text-anchor="middle" class="vbad">971 ms</text>
+  <text x="690" y="50" text-anchor="end" class="vbad">1230 ms</text>
+
+  <polyline points="100,214 250,204 400,200 700,193" class="lgood"/>
+  <circle cx="100" cy="214" r="4" class="dgood"/>
+  <circle cx="250" cy="204" r="4" class="dgood"/>
+  <circle cx="400" cy="200" r="4" class="dgood"/>
+  <circle cx="700" cy="193" r="4" class="dgood"/>
+  <text x="700" y="184" text-anchor="end" class="vgood">209 ms</text>
+
+  <line x1="470" y1="16" x2="490" y2="16" class="lbad"/>
+  <text x="496" y="20" class="tick">no limits</text>
+  <line x1="570" y1="16" x2="590" y2="16" class="lgood"/>
+  <text x="596" y="20" class="tick">shedding on</text>
+
+  <text x="20" y="276" class="note">With no limits the server accepts everything and everyone waits. With shedding it holds p99 flat and returns 503 to the excess.</text>
+</svg>

@@ -1,0 +1,42 @@
+profil: CPU.20260903.211230.39184.0.001.cpuprofile
+probki aktywne: 18971, idle: 11314 (37% czasu serwer nic nie robil)
+
+=== gdzie idzie CPU (self time) ===
+ 37.0%  drizzle-orm
+ 18.3%  native
+ 13.0%  node internals
+  9.7%  fastify
+  6.8%  V8 / program
+  4.9%  pg
+  2.9%  pg-protocol
+  2.2%  GC
+  1.7%  pg-pool
+  1.2%  app code
+  0.6%  prom-client
+  0.5%  find-my-way
+  0.5%  pino
+  0.4%  pg-types
+  0.1%  ajv
+  0.1%  secure-json-parse
+
+=== top 20 funkcji ===
+ 13.9%  is  [drizzle-orm]
+ 12.2%  writev  [native]
+  9.3%  (anonymous)  [drizzle-orm]
+  6.8%  (program)  [V8 / program]
+  4.5%  serialize  [fastify]
+  3.4%  preSerializationHookEnd  [fastify]
+  2.7%  buildQueryFromSourceParams  [drizzle-orm]
+  2.5%  addFields  [pg]
+  2.2%  (garbage collector)  [GC]
+  1.9%  mapFromDriverValue  [drizzle-orm]
+  1.7%  (anonymous)  [native]
+  1.4%  runMicrotasks  [native]
+  1.3%  utf8Slice  [native]
+  1.2%  (anonymous)  [app code]
+  1.1%  sql  [drizzle-orm]
+  1.0%  PgSelectQueryBuilderBase  [drizzle-orm]
+  1.0%  buildSelection  [drizzle-orm]
+  1.0%  get  [node internals]
+  0.9%  emit  [node internals]
+  0.8%  buildSelectQuery  [drizzle-orm]
