@@ -11,19 +11,20 @@ part is not the final number but which change gave what.
 
 ## Where it stands
 
-| Stage | Change                             | Capacity | p95 on task list |
-| ----- | ---------------------------------- | -------- | ---------------- |
-| 1     | nothing, baseline                  | 1 RPS    | 4980 ms          |
-| 2     | one index on comments.task_id      | 30 RPS   | 235 ms           |
-| 3     | the right composite index on tasks | 120 RPS  | 197 ms           |
-| 4     | joins instead of N+1               | 400 RPS  | 8 ms             |
-| 5     | Node on 4 processes instead of 1   | 1200 RPS | 69 ms            |
-| 6     | timeouts and load shedding         | 1200 RPS | 209 ms at 2000   |
+| Stage | Change                             | Capacity | p95 there | p99 at 2000 offered |
+| ----- | ---------------------------------- | -------- | --------- | ------------------- |
+| 1     | nothing, baseline                  | 1 RPS    | 4980 ms   |                     |
+| 2     | one index on comments.task_id      | 30 RPS   | 235 ms    |                     |
+| 3     | the right composite index on tasks | 120 RPS  | 197 ms    |                     |
+| 4     | joins instead of N+1               | 400 RPS  | 8 ms      |                     |
+| 5     | Node on 4 processes instead of 1   | 1200 RPS | 46 ms     | 1230 ms             |
+| 6     | timeouts and load shedding         | 1200 RPS | 46 ms     | 209 ms              |
+| 7     | prepared statements, schemas       | 2000 RPS | 57 ms     | 93 ms               |
 
-1200x capacity on unchanged hardware, and the last step caps latency instead of
-raising throughput. Offered 2000 RPS, the server now holds p99 at 209 ms and
-returns 503 to the excess, where before it accepted everything and made everyone
-wait 1.2 seconds.
+2000x capacity on unchanged hardware. Offered 2000 RPS the server holds p99 at
+93 ms and returns 503 to anything it cannot take, where the first version needed
+5 seconds to answer a single request. The setup itself tops out near 15 000 RPS
+on an endpoint that returns a constant.
 
 ## Contents
 
@@ -39,15 +40,16 @@ wait 1.2 seconds.
 
 Each file has the same shape: what I did, the numbers, what I learned.
 
-| File                                              | What is in it                          |
-| ------------------------------------------------- | -------------------------------------- |
-| [00-starting-point.md](docs/00-starting-point.md) | Design decisions and what I left out   |
-| [01-baseline.md](docs/01-baseline.md)             | The untouched system, 1 RPS            |
-| [02-indexes.md](docs/02-indexes.md)               | One index, 30x capacity                |
-| [03-index-choice.md](docs/03-index-choice.md)     | Four indexes for one query, 300x apart |
-| [04-n-plus-one.md](docs/04-n-plus-one.md)         | 42 queries down to 3                   |
-| [05-cluster.md](docs/05-cluster.md)               | Four processes beat six, and why       |
-| [06-overload.md](docs/06-overload.md)             | Refusing work instead of queueing it   |
+| File                                                        | What is in it                               |
+| ----------------------------------------------------------- | ------------------------------------------- |
+| [00-starting-point.md](docs/00-starting-point.md)           | Design decisions and what I left out        |
+| [01-baseline.md](docs/01-baseline.md)                       | The untouched system, 1 RPS                 |
+| [02-indexes.md](docs/02-indexes.md)                         | One index, 30x capacity                     |
+| [03-index-choice.md](docs/03-index-choice.md)               | Four indexes for one query, 300x apart      |
+| [04-n-plus-one.md](docs/04-n-plus-one.md)                   | 42 queries down to 3                        |
+| [05-cluster.md](docs/05-cluster.md)                         | Four processes beat six, and why            |
+| [06-overload.md](docs/06-overload.md)                       | Refusing work instead of queueing it        |
+| [07-cost-of-abstraction.md](docs/07-cost-of-abstraction.md) | Where CPU actually goes, and 39% less of it |
 
 ## Why the first version was slow
 

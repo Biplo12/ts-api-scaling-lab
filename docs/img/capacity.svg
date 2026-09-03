@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" width="760" height="250" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 280" width="760" height="280" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
   <style>
     .title { fill: #1f2328; font-size: 15px; font-weight: 600; }
     .label { fill: #1f2328; font-size: 12px; }
@@ -11,6 +11,7 @@
     .b3 { fill: #d29922; }
     .b4 { fill: #58a6ff; }
     .b5 { fill: #3fb950; }
+    .b6 { fill: #2da44e; }
     @media (prefers-color-scheme: dark) {
       .title { fill: #f0f6fc; }
       .label { fill: #f0f6fc; }
@@ -23,15 +24,15 @@
 
   <text x="20" y="24" class="title">Requests per second, same machine, same data</text>
 
-  <line x1="168" y1="38" x2="168" y2="188" class="axis"/>
-  <line x1="326" y1="38" x2="326" y2="188" class="axis"/>
-  <line x1="484" y1="38" x2="484" y2="188" class="axis"/>
-  <line x1="642" y1="38" x2="642" y2="188" class="axis"/>
+  <line x1="168" y1="38" x2="168" y2="218" class="axis"/>
+  <line x1="326" y1="38" x2="326" y2="218" class="axis"/>
+  <line x1="484" y1="38" x2="484" y2="218" class="axis"/>
+  <line x1="642" y1="38" x2="642" y2="218" class="axis"/>
 
-  <text x="168" y="204" text-anchor="middle" class="tick">1</text>
-  <text x="326" y="204" text-anchor="middle" class="tick">10</text>
-  <text x="484" y="204" text-anchor="middle" class="tick">100</text>
-  <text x="642" y="204" text-anchor="middle" class="tick">1000</text>
+  <text x="168" y="234" text-anchor="middle" class="tick">1</text>
+  <text x="326" y="234" text-anchor="middle" class="tick">10</text>
+  <text x="484" y="234" text-anchor="middle" class="tick">100</text>
+  <text x="642" y="234" text-anchor="middle" class="tick">1000</text>
 
   <text x="110" y="62" text-anchor="end" class="label">baseline</text>
   <rect x="120" y="48" width="48" height="20" class="b1" rx="2"/>
@@ -53,6 +54,10 @@
   <rect x="120" y="168" width="534" height="20" class="b5" rx="2"/>
   <text x="662" y="183" class="value">1200</text>
 
-  <text x="20" y="228" class="note">Logarithmic scale. Nothing was added to the hardware. p95 on the task list went from 4980 ms</text>
-  <text x="20" y="244" class="note">to 69 ms across these five steps.</text>
+  <text x="110" y="212" text-anchor="end" class="label">+ prepared, schemas</text>
+  <rect x="120" y="198" width="569" height="20" class="b6" rx="2"/>
+  <text x="697" y="213" class="value">2000</text>
+
+  <text x="20" y="258" class="note">Logarithmic scale. Nothing was added to the hardware. p99 on the task list went from 4980 ms</text>
+  <text x="20" y="274" class="note">to 93 ms, and above capacity the server now returns 503 instead of making everyone wait.</text>
 </svg>

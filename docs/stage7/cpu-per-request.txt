@@ -1,0 +1,11 @@
+CPU na 1000 requestow (probki):
+
+drizzle-orm           334 ->   68 -80%
+native                165 ->  178 +8%
+node internals        117 ->  101 -14%
+pg (all)               90 ->   80 -12%
+JSON serialization     88 ->   42 -52%
+V8                     61 ->   48 -21%
+app code               11 ->    8 -24%
+
+RAZEM                 903 ->  550 -39%

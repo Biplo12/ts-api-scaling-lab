@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 300" width="760" height="300" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .title { fill: #1f2328; font-size: 14px; font-weight: 600; }
+    .label { fill: #1f2328; font-size: 11px; }
+    .value { fill: #656d76; font-size: 10px; font-weight: 600; }
+    .axis { stroke: #d0d7de; stroke-width: 1; }
+    .tick { fill: #656d76; font-size: 10px; }
+    .note { fill: #656d76; font-size: 11px; }
+    .before { fill: #f85149; }
+    .after { fill: #3fb950; }
+    .worse { fill: #d29922; }
+    @media (prefers-color-scheme: dark) {
+      .title { fill: #f0f6fc; }
+      .label { fill: #f0f6fc; }
+      .value { fill: #9198a1; }
+      .axis { stroke: #3d444d; }
+      .tick { fill: #9198a1; }
+      .note { fill: #9198a1; }
+    }
+  </style>
+
+  <text x="20" y="22" class="title">CPU spent per request, before and after stage 7</text>
+
+  <rect x="470" y="12" width="10" height="10" class="before" rx="2"/>
+  <text x="486" y="21" class="tick">before</text>
+  <rect x="540" y="12" width="10" height="10" class="after" rx="2"/>
+  <text x="556" y="21" class="tick">after</text>
+
+  <line x1="190" y1="36" x2="190" y2="252" class="axis"/>
+  <line x1="319" y1="36" x2="319" y2="252" class="axis"/>
+  <line x1="447" y1="36" x2="447" y2="252" class="axis"/>
+  <line x1="576" y1="36" x2="576" y2="252" class="axis"/>
+
+  <text x="190" y="268" text-anchor="middle" class="tick">0</text>
+  <text x="319" y="268" text-anchor="middle" class="tick">100</text>
+  <text x="447" y="268" text-anchor="middle" class="tick">200</text>
+  <text x="576" y="268" text-anchor="middle" class="tick">300</text>
+  <text x="400" y="284" text-anchor="middle" class="tick">CPU samples per 1000 requests</text>
+
+  <text x="182" y="56" text-anchor="end" class="label">drizzle-orm</text>
+  <rect x="190" y="44" width="429" height="11" class="before" rx="1"/>
+  <rect x="190" y="55" width="87" height="11" class="after" rx="1"/>
+  <text x="625" y="53" class="value">334</text>
+  <text x="283" y="64" class="value">68, -80%</text>
+
+  <text x="182" y="86" text-anchor="end" class="label">native (writev)</text>
+  <rect x="190" y="74" width="212" height="11" class="before" rx="1"/>
+  <rect x="190" y="85" width="229" height="11" class="worse" rx="1"/>
+  <text x="408" y="83" class="value">165</text>
+  <text x="425" y="94" class="value">178, +8%</text>
+
+  <text x="182" y="116" text-anchor="end" class="label">node internals</text>
+  <rect x="190" y="104" width="150" height="11" class="before" rx="1"/>
+  <rect x="190" y="115" width="130" height="11" class="after" rx="1"/>
+  <text x="346" y="113" class="value">117</text>
+  <text x="326" y="124" class="value">101, -14%</text>
+
+  <text x="182" y="146" text-anchor="end" class="label">pg driver</text>
+  <rect x="190" y="134" width="116" height="11" class="before" rx="1"/>
+  <rect x="190" y="145" width="103" height="11" class="after" rx="1"/>
+  <text x="312" y="143" class="value">90</text>
+  <text x="299" y="154" class="value">80, -12%</text>
+
+  <text x="182" y="176" text-anchor="end" class="label">JSON serialization</text>
+  <rect x="190" y="164" width="113" height="11" class="before" rx="1"/>
+  <rect x="190" y="175" width="54" height="11" class="after" rx="1"/>
+  <text x="309" y="173" class="value">88</text>
+  <text x="250" y="184" class="value">42, -52%</text>
+
+  <text x="182" y="206" text-anchor="end" class="label">V8</text>
+  <rect x="190" y="194" width="78" height="11" class="before" rx="1"/>
+  <rect x="190" y="205" width="62" height="11" class="after" rx="1"/>
+  <text x="274" y="203" class="value">61</text>
+  <text x="258" y="214" class="value">48, -21%</text>
+
+  <text x="182" y="236" text-anchor="end" class="label">app code</text>
+  <rect x="190" y="224" width="14" height="11" class="before" rx="1"/>
+  <rect x="190" y="235" width="10" height="11" class="after" rx="1"/>
+  <text x="210" y="233" class="value">11</text>
+  <text x="206" y="244" class="value">8</text>
+
+  <text x="20" y="298" class="note">Total CPU per request fell 39 percent. Prepared statements took Drizzle down 80 percent. Writing bytes to the socket is now the largest single cost.</text>
+</svg>
