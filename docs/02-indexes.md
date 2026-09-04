@@ -1,6 +1,6 @@
 # Stage 2: First index
 
-One index, on `comments.task_id`. Nothing else changed.
+One index, on `comments.task_id`.
 
 **Capacity: 1 RPS to 30 RPS.**
 
@@ -8,8 +8,8 @@ One index, on `comments.task_id`. Nothing else changed.
 
 ## The problem
 
-The task list runs 20 counts over the comments table, one per task. The table is
-666 MB and had no index on `task_id`, so every count read all of it.
+The task list runs one count per task over the comments table. That is 20 counts.
+Each one reads the whole table, 559 MB of it.
 
 ## The change
 
@@ -17,47 +17,51 @@ The task list runs 20 counts over the comments table, one per task. The table is
 (t) => [index('comments_task_id_idx').on(t.taskId)];
 ```
 
-Three seconds to build, 65 MB on disk.
+It took three seconds to build and takes 65 MB.
 
 ## Numbers
 
 Counting comments for one task:
 
-|              | Before            | After           |
-| ------------ | ----------------- | --------------- |
-| Plan         | Parallel Seq Scan | Index Only Scan |
-| Rows scanned | 5 000 000         | 3               |
-| Read         | 435 MB            | 56 kB           |
-| Time         | 638 ms            | 0.077 ms        |
+|                 | Before            | After           |
+| --------------- | ----------------- | --------------- |
+| Plan            | Parallel Seq Scan | Index Only Scan |
+| Rows scanned    | 5 000 000         | 3               |
+| Read from disk  | 435 MB            | 56 kB           |
+| Read from cache | 124 MB            | 32 kB           |
+| Time            | 638 ms            | 0.077 ms        |
 
-The endpoints, median of 15 runs:
+Endpoints:
 
-| Endpoint            | Before  | After   |
-| ------------------- | ------- | ------- |
-| /tasks/:id          | 104 ms  | 10.9 ms |
-| /projects/:id/tasks | 2244 ms | 82 ms   |
+| Endpoint             | Before  | After   |
+| -------------------- | ------- | ------- |
+| /tasks/:id           | 104 ms  | 10.9 ms |
+| /projects/4200/tasks | 2244 ms | 82 ms   |
 
-Under load the task list held 132 ms median at 30 RPS. At 40 it gave up.
+Under load:
+
+| Asked for | Task list median | p95     | Kept up          |
+| --------- | ---------------- | ------- | ---------------- |
+| 20 RPS    | 88 ms            | 127 ms  | yes              |
+| 30 RPS    | 132 ms           | 235 ms  | yes              |
+| 40 RPS    | 1210 ms          | 5330 ms | no, delivered 36 |
 
 ## Notes
 
-Thirty times the capacity from one index. Nothing else was touched, which is the
-whole reason for measuring one change at a time.
+Thirty times the capacity from one index. I did not change anything else.
 
-`Heap Fetches: 0` means the count is answered from the index alone and the table
-is never opened. That happened by luck here: the query needs only `task_id`,
-which is the indexed column. If it needed anything else the gain would be
-smaller.
+The new plan says `Heap Fetches: 0`. Postgres answers the count from the index and
+never opens the table. That works because the query only needs `task_id`. If it
+needed any other column, Postgres would have to fetch the rows too.
 
-The way it fails has not changed. At 40 RPS there are still zero errors, the
-server just queues.
+At 40 RPS there are still no HTTP errors. The requests that went missing were
+dropped by k6 after waiting. The server did not refuse them.
 
-The task list still runs 42 queries for one page.
+The task list is down to 82 ms. It still runs 42 queries for one page.
 
 Plans: [before](stage2/before-count-comments.txt),
 [after](stage2/after-count-comments.txt)
 
 ## Next
 
-The big query is now the task list itself, still a sequential scan over 2 million
-rows.
+Those 42 queries look like the obvious thing to fix. The plan says something else.

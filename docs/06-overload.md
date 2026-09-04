@@ -1,19 +1,16 @@
 # Stage 6: Under overload
 
-Query timeouts, a pool wait timeout, and a cap on requests in flight.
+Query timeouts, a pool timeout, and a cap on requests in flight.
 
-**Capacity did not change. What happens above it did.**
+**Capacity: still 1200 RPS.** At 2000 asked for, p99 went from 1230 ms to 209 ms.
 
 ![p99 under overload](img/stage6-overload.svg)
 
 ## The problem
 
-Every stage so far ended the same way. Past capacity the server returned zero
-errors and made everyone wait longer. At 2000 offered RPS p99 was 1.23 seconds
-and k6 abandoned 27 855 requests that never came back in time.
-
-A real client gives up long before that, so the server was computing answers
-nobody was waiting for.
+Every stage so far ended the same way. Above capacity the server returned no
+errors and made everyone wait. At 2000 asked for, p99 was 1230 ms and k6 gave up
+on 27 855 requests. The server was still computing answers nobody was waiting for.
 
 ## The change
 
@@ -32,68 +29,68 @@ if (shedding && inflight.current >= MAX_INFLIGHT) {
 }
 ```
 
-`/health` and `/metrics` skip the check. A monitoring endpoint that returns 503
-during overload would take the server out of the load balancer at the worst
-possible moment.
+`/health` and `/metrics` skip the check. If a monitoring endpoint returned 503
+during overload, a load balancer would pull the server out at the worst moment.
 
 ## Numbers
 
-p99 of accepted requests, four workers:
+Four workers. p99 of the requests the server accepted:
 
-| Offered | No limits | Shedding, limit 25 |
-| ------- | --------- | ------------------ |
-| 400     | 54 ms     | 42 ms              |
-| 800     | 72 ms     | 123 ms             |
-| 1200    | 246 ms    | 153 ms             |
-| 1600    | 971 ms    | -                  |
-| 2000    | 1230 ms   | **209 ms**         |
+| Asked for | No limits | Shedding, limit 25 |
+| --------- | --------- | ------------------ |
+| 400       | 54 ms     | 42 ms              |
+| 800       | 72 ms     | 123 ms             |
+| 1200      | 246 ms    | 153 ms             |
+| 1600      | 971 ms    | not measured       |
+| 2000      | 1230 ms   | 209 ms             |
 
-What the client sees:
+What the client gets:
 
-| Offered | No limits: gave up waiting | Shedding: told to retry |
-| ------- | -------------------------- | ----------------------- |
-| 400     | 0                          | 0                       |
-| 800     | 102                        | 26                      |
-| 1200    | 496                        | 3569                    |
-| 2000    | 27 855                     | 29 644                  |
+| Asked for | No limits: gave up waiting | Shedding: told to retry |
+| --------- | -------------------------- | ----------------------- |
+| 400       | 0                          | 0                       |
+| 800       | 102                        | 26                      |
+| 1200      | 496                        | 3569                    |
+| 2000      | 27 855                     | 29 644                  |
 
-Throughput of successful requests is the same either way, around 1100 per second.
-Shedding does not make the server faster. It makes it honest.
+Throughput is the same either way. At 2000 asked for, the server accepted 1084 per
+second with shedding and 1149 without it.
 
 ## The limit is a latency dial
 
-Same offered load of 2000 RPS, only the limit changed:
+Same 2000 asked for. I only changed the limit:
 
-| Limit per worker | In flight total | med    | p99    |
-| ---------------- | --------------- | ------ | ------ |
-| 15               | 60              | 53 ms  | 154 ms |
-| 25               | 100             | 88 ms  | 209 ms |
-| 50               | 200             | 198 ms | 402 ms |
-| 100              | 400             | 319 ms | 565 ms |
+| Limit per worker | In flight | Accepted | Median | Little's law |
+| ---------------- | --------- | -------- | ------ | ------------ |
+| 15               | 60        | 1071     | 53 ms  | 56 ms        |
+| 25               | 100       | 1084     | 88 ms  | 92 ms        |
+| 50               | 200       | 974      | 198 ms | 205 ms       |
+| 100              | 400       | 1170     | 319 ms | 342 ms       |
 
-This is Little's law, `L = lambda * W`. At about 1070 accepted per second, 60 in
-flight predicts 56 ms and I measured 53. For 100 it predicts 93 and I measured 88. For 200 it predicts 205 and I measured 198.
-
-I did not expect the arithmetic to land that close.
+The last column is `L / lambda`. For each row I used the accepted rate from that
+same row. Every row lands within 7 percent. The 400 row fits worst, at 7.
 
 ## Notes
 
-Capacity is unchanged. This stage caps latency, it does not add throughput. Both
-are worth having and they are different things.
+Capacity did not move. This stage caps latency. That is a different thing from
+adding throughput.
 
-Shedding costs something at medium load. At 800 RPS p99 was 123 ms with the limit
-and 72 ms without, because limit 25 caps concurrency below what the machine could
-use at that rate. That is the price of the guarantee higher up.
+Shedding costs something below capacity. At 800 asked for, p99 was 123 ms with the
+limit and 72 ms without it. Limit 25 caps how much work runs at once, and at that
+rate the machine could handle more.
 
-Picking the limit is a decision about the latency you promise, not a knob to
-maximize. Choose the p99 you want, divide by your throughput, and there is the
-limit.
+To pick the limit, take the p99 you want to promise and divide by your throughput.
+It is not a number to make as large as possible.
 
-Timeouts alone changed almost nothing: 1025 accepted RPS against 1145 without
-them, p95 still 1.46 s. They stop one stuck query from holding a connection
-forever. They do not shorten a queue.
+Timeouts on their own changed almost nothing. In a separate run at 2000 asked for,
+the server accepted 1025 with them and 1149 without, and p95 stayed at 1460 ms. A
+timeout stops one stuck query from holding a connection. It does not shorten a
+queue.
+
+The 1600 row has no shedding number. I stopped measuring that rate once the
+pattern was clear at 2000.
 
 ## Next
 
-The database is idle at capacity and Node is the limit. Time to find out what
-Node is actually doing.
+The database is idle at capacity and Node is the limit. I need to see what Node
+spends its time on.

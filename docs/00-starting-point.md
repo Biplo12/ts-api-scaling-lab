@@ -1,38 +1,28 @@
 # Starting point
 
-What I decided before writing any code, and what I deliberately left broken.
+What I decided before writing any code.
 
 ## Schema
 
-| Decision                    | Why                                         |
-| --------------------------- | ------------------------------------------- |
-| `org_id` on every table     | every query filters by organization         |
-| `bigint identity`, not UUID | sequential ids keep the index small         |
-| `timestamptz` everywhere    | plain `timestamp` throws away the time zone |
-| Postgres enums              | 4 bytes instead of a string                 |
+| Decision                    | Why                                   |
+| --------------------------- | ------------------------------------- |
+| `org_id` on every table     | every query filters by organization   |
+| `bigint identity`, not UUID | numbers in order keep the index small |
+| `timestamptz` everywhere    | plain `timestamp` loses the time zone |
+| Postgres enums              | 4 bytes instead of a string           |
 
-Adding a value to a Postgres enum is easy. Removing one is not, so the lists were
-worth thinking about before loading 7 million rows.
+Enums are easy to add values to. They are hard to remove values from. So I fixed
+the lists before loading 7.3 million rows.
 
 ## Postgres settings
 
-Defaults, untouched.
-
-|                |        |
-| -------------- | ------ |
-| shared_buffers | 128 MB |
-| work_mem       | 4 MB   |
-
-The database is 1003 MB, so most of it does not fit in cache.
+All defaults. `shared_buffers` is 128 MB and `work_mem` is 4 MB. The database is
+1003 MB.
 
 ## Left broken on purpose
 
-- No indexes beyond primary keys and unique constraints.
-- Foreign keys with no index. Postgres does not create them for you.
-- No pooler, no cache, no metrics.
-- Queries written the plain way, N+1 included.
-
-If the first version had been fast there would have been nothing to show.
+No indexes except primary keys and unique constraints. Foreign keys with no
+index. No connection pooler. No cache. No metrics. Query loops instead of joins.
 
 ## Stages
 

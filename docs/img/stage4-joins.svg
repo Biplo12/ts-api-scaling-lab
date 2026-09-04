@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230" width="760" height="230" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <style>
+    .title { fill: #1f2328; font-size: 14px; font-weight: 600; }
+    .label { fill: #1f2328; font-size: 12px; }
+    .value { fill: #656d76; font-size: 11px; font-weight: 600; }
+    .axis { stroke: #d0d7de; stroke-width: 1; }
+    .tick { fill: #656d76; font-size: 10px; }
+    .note { fill: #656d76; font-size: 11px; }
+    .before { fill: #f85149; }
+    .after { fill: #3fb950; }
+    @media (prefers-color-scheme: dark) {
+      .title { fill: #f0f6fc; }
+      .label { fill: #f0f6fc; }
+      .value { fill: #9198a1; }
+      .axis { stroke: #3d444d; }
+      .tick { fill: #9198a1; }
+      .note { fill: #9198a1; }
+    }
+  </style>
+
+  <text x="20" y="22" class="title">Query loops replaced with joins</text>
+
+  <rect x="500" y="12" width="10" height="10" class="before" rx="2"/>
+  <text x="516" y="21" class="tick">before</text>
+  <rect x="580" y="12" width="10" height="10" class="after" rx="2"/>
+  <text x="596" y="21" class="tick">after</text>
+
+  <line x1="200" y1="38" x2="200" y2="166" class="axis"/>
+  <line x1="330" y1="38" x2="330" y2="166" class="axis"/>
+  <line x1="460" y1="38" x2="460" y2="166" class="axis"/>
+  <line x1="590" y1="38" x2="590" y2="166" class="axis"/>
+  <line x1="720" y1="38" x2="720" y2="166" class="axis"/>
+
+  <text x="200" y="182" text-anchor="middle" class="tick">0</text>
+  <text x="330" y="182" text-anchor="middle" class="tick">10 ms</text>
+  <text x="460" y="182" text-anchor="middle" class="tick">20 ms</text>
+  <text x="590" y="182" text-anchor="middle" class="tick">30 ms</text>
+  <text x="720" y="182" text-anchor="middle" class="tick">40 ms</text>
+
+  <text x="190" y="60" text-anchor="end" class="label">/projects/:id/tasks</text>
+  <rect x="200" y="46" width="442" height="18" class="before" rx="2"/>
+  <text x="648" y="60" class="value">34 ms, 42 queries</text>
+  <rect x="200" y="68" width="78" height="18" class="after" rx="2"/>
+  <text x="284" y="82" class="value">6.0 ms, 3 queries</text>
+
+  <text x="190" y="120" text-anchor="end" class="label">/tasks/:id</text>
+  <rect x="200" y="106" width="172" height="18" class="before" rx="2"/>
+  <text x="378" y="120" class="value">13.2 ms, 15 queries</text>
+  <rect x="200" y="128" width="68" height="18" class="after" rx="2"/>
+  <text x="274" y="142" class="value">5.2 ms, 2 queries</text>
+
+  <text x="20" y="206" class="note">Linear scale. Median of 15 runs, one request at a time. Nothing was added to the database.</text>
+</svg>
